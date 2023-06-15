@@ -217,7 +217,7 @@
                 "requestBody": {
                     "description": "Create a new project from a sitemap",
                     "content": {
-                        "application\/json": {
+                        "multipart\/form-data": {
                             "schema": {
                                 "type": "object",
                                 "properties": {
@@ -348,7 +348,7 @@
                 "requestBody": {
                     "description": "Create a new project from a sitemap",
                     "content": {
-                        "application\/json": {
+                        "multipart\/form-data": {
                             "schema": {
                                 "type": "object",
                                 "properties": {
@@ -567,10 +567,7 @@
                                                         "data": {
                                                             "type": "array",
                                                             "items": {
-                                                                "type": "array",
-                                                                "items": {
-                                                                    "$ref": "#\/components\/schemas\/Page"
-                                                                }
+                                                                "$ref": "#\/components\/schemas\/Page"
                                                             }
                                                         },
                                                         "first_page_url": {
