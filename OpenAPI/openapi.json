@@ -827,11 +827,11 @@
                     "200": {
                         "$ref": "#\/components\/responses\/UpdateProjectSettingsResponse"
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/UpdateProjectSettingsErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
-                    },
-                    "404": {
-                        "$ref": "#\/components\/responses\/ProjectNotFoundErrorResponse"
                     },
                     "500": {
                         "$ref": "#\/components\/responses\/InternalServerErrorResponse"
@@ -2233,6 +2233,60 @@
                                             ],
                                             "type": "string",
                                             "example": "Project plugin with id 1 not found"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "UpdateProjectSettingsErrorResponse": {
+                "description": "Update project settings failed",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "url": {
+                                    "description": "The URL of the request",
+                                    "type": "string",
+                                    "example": "https:\/\/app.customgpt.ai\/api\/v1\/projects\/1"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "The error status code",
+                                            "enum": [
+                                                400,
+                                                401,
+                                                403,
+                                                404,
+                                                500,
+                                                503
+                                            ],
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "message": {
+                                            "description": "The error message",
+                                            "enum": [
+                                                "Please upload a valid image file for avatar",
+                                                "Please upload a valid image file for background",
+                                                "Language Proficiency is required."
+                                            ],
+                                            "type": "string",
+                                            "example": "Please upload a valid image file for avatar"
                                         }
                                     }
                                 }
