@@ -321,7 +321,7 @@
                     }
                 ],
                 "requestBody": {
-                    "description": "Update a project from a sitemap or a file",
+                    "description": "Update a project",
                     "content": {
                         "multipart\/form-data": {
                             "schema": {
@@ -767,6 +767,12 @@
                                         "type": "string",
                                         "maxLength": 255,
                                         "example": "en"
+                                    },
+                                    "chatbot_color": {
+                                        "description": "Chatbot color in hex format",
+                                        "type": "string",
+                                        "maxLength": 9,
+                                        "example": "#000000"
                                     }
                                 }
                             }
@@ -782,6 +788,196 @@
                     },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
+                    },
+                    "500": {
+                        "$ref": "#\/components\/responses\/InternalServerErrorResponse"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ]
+            }
+        },
+        "\/api\/v1\/projects\/{projectId}\/plugins": {
+            "get": {
+                "tags": [
+                    "Project Plugins"
+                ],
+                "summary": "Show a certain project plugin.",
+                "description": "Retrieve the plugin for a project.",
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The unique project id.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#\/components\/responses\/ListProjectPluginResponse"
+                    },
+                    "401": {
+                        "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ProjectPluginNotFoundErrorResponse"
+                    },
+                    "500": {
+                        "$ref": "#\/components\/responses\/InternalServerErrorResponse"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Project Plugins"
+                ],
+                "summary": "Create a plugin.",
+                "description": "Create a new plugin for a specific project by `projectId`.",
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The id of a project in which plugin will be stored.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Create a project plugin",
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "model_name": {
+                                        "description": "Model Name",
+                                        "type": "string",
+                                        "example": "IndoorPlants"
+                                    },
+                                    "human_name": {
+                                        "description": "Name For Human",
+                                        "type": "string",
+                                        "example": "The Indoor Plants Channel"
+                                    },
+                                    "keywords": {
+                                        "description": "Keywords For Model",
+                                        "type": "string",
+                                        "example": "Indoor plants, Gardening, Trusted information."
+                                    },
+                                    "description": {
+                                        "description": "Description For Human",
+                                        "type": "string",
+                                        "example": "Trusted information about indoor plants and gardening."
+                                    },
+                                    "is_active": {
+                                        "description": "Whether the project plugin is active or not",
+                                        "default": false,
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#\/components\/responses\/CreateProjectPluginResponse"
+                    },
+                    "401": {
+                        "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ProjectNotFoundErrorResponse"
+                    },
+                    "500": {
+                        "$ref": "#\/components\/responses\/InternalServerErrorResponse"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Project Plugins"
+                ],
+                "summary": "Update a plugin.",
+                "description": "Update plugin of a specific project by `projectId`.",
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The id of a project in which plugin will be stored.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Update a project plugin",
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "model_name": {
+                                        "description": "Model Name",
+                                        "type": "string",
+                                        "example": "IndoorPlants"
+                                    },
+                                    "human_name": {
+                                        "description": "Name For Human",
+                                        "type": "string",
+                                        "example": "The Indoor Plants Channel"
+                                    },
+                                    "keywords": {
+                                        "description": "Keywords For Model",
+                                        "type": "string",
+                                        "example": "Indoor plants, Gardening, Trusted information."
+                                    },
+                                    "description": {
+                                        "description": "Description For Human",
+                                        "type": "string",
+                                        "example": "Trusted information about indoor plants and gardening."
+                                    },
+                                    "is_active": {
+                                        "description": "Whether the project plugin is active or not",
+                                        "default": false,
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#\/components\/responses\/UpdateProjectPluginResponse"
+                    },
+                    "401": {
+                        "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ProjectPluginNotFoundErrorResponse"
                     },
                     "500": {
                         "$ref": "#\/components\/responses\/InternalServerErrorResponse"
@@ -1382,6 +1578,277 @@
                 ]
             }
         },
+        "\/api\/v1\/projects\/{projectId}\/sources": {
+            "get": {
+                "tags": [
+                    "Sources"
+                ],
+                "summary": "List a certain project's sources.",
+                "description": "List all sources for a given project.",
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The unique identifier of a project.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved list of projects that belong to the user.",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The status of the response",
+                                            "enum": [
+                                                "error",
+                                                "success"
+                                            ],
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "ListProjectSourcesResponse": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "sitemaps",
+                                                        "uploads"
+                                                    ],
+                                                    "properties": {
+                                                        "sitemaps": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#\/components\/schemas\/ProjectSource"
+                                                            }
+                                                        },
+                                                        "uploads": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#\/components\/schemas\/ProjectSource"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ProjectNotFoundErrorResponse"
+                    },
+                    "500": {
+                        "$ref": "#\/components\/responses\/InternalServerErrorResponse"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Sources"
+                ],
+                "summary": "Create a new project source.",
+                "description": "Create a new source for a given project.",
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The unique identifier of a project.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Create a new project source from a sitemap or a file",
+                    "content": {
+                        "multipart\/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "sitemap_path": {
+                                        "description": "The sitemap path",
+                                        "type": "string",
+                                        "example": "https:\/\/example.com\/sitemap.xml"
+                                    },
+                                    "file_data_retension": {
+                                        "description": "File data retension",
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "file": {
+                                        "description": "The submitted file.",
+                                        "format": "binary",
+                                        "type": "string",
+                                        "example": "file.pdf"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved list of projects that belong to the user.",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The status of the response",
+                                            "enum": [
+                                                "error",
+                                                "success"
+                                            ],
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "ListProjectSourcesResponse": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "sitemaps",
+                                                        "uploads"
+                                                    ],
+                                                    "properties": {
+                                                        "sitemaps": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#\/components\/schemas\/ProjectSource"
+                                                            }
+                                                        },
+                                                        "uploads": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#\/components\/schemas\/ProjectSource"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#\/components\/responses\/FlaskServiceErrorResponse"
+                    },
+                    "401": {
+                        "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ProjectNotFoundErrorResponse"
+                    },
+                    "500": {
+                        "$ref": "#\/components\/responses\/InternalServerErrorResponse"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ]
+            }
+        },
+        "\/api\/v1\/projects\/{projectId}\/sources\/{sourceId}": {
+            "delete": {
+                "tags": [
+                    "Sources"
+                ],
+                "summary": "Delete a project source.",
+                "description": "Delete a source for a given project.",
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The unique identifier of a project.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sourceId",
+                        "in": "path",
+                        "description": "The unique identifier of a source.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Project source deleted successfully",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The status of the response",
+                                            "enum": [
+                                                "error",
+                                                "success"
+                                            ],
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "deleted": {
+                                                    "description": "Whether the project source was deleted successfully or not",
+                                                    "type": "boolean",
+                                                    "example": true
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ProjectNotFoundErrorResponse"
+                    },
+                    "500": {
+                        "$ref": "#\/components\/responses\/InternalServerErrorResponse"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ]
+            }
+        },
         "\/api\/v1\/preview\/{id}": {
             "get": {
                 "tags": [
@@ -1581,6 +2048,11 @@
                         "description": "The chatbot message language",
                         "type": "string",
                         "example": "en"
+                    },
+                    "chatbot_color": {
+                        "description": "The chatbot color in hex format",
+                        "type": "string",
+                        "example": "#000000"
                     }
                 }
             },
@@ -1870,11 +2342,6 @@
             "ProjectPlugin": {
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "description": "Plugin ID",
-                        "type": "integer",
-                        "example": 1
-                    },
                     "model_name": {
                         "description": "Model Name",
                         "type": "string",
@@ -1905,6 +2372,74 @@
                         "default": false,
                         "type": "boolean",
                         "example": true
+                    }
+                }
+            },
+            "ProjectSource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "description": "The project source ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "description": "The project source creation date",
+                        "format": "date-time",
+                        "type": "string",
+                        "example": "2021-01-01 00:00:00"
+                    },
+                    "updated_at": {
+                        "description": "The project source update date",
+                        "format": "date-time",
+                        "type": "string",
+                        "example": "2021-01-01 00:00:00"
+                    },
+                    "type": {
+                        "description": "The project source type",
+                        "enum": [
+                            "sitemap",
+                            "upload"
+                        ],
+                        "type": "string",
+                        "example": "sitemap"
+                    },
+                    "settings": {
+                        "description": "The project source settings",
+                        "type": "object",
+                        "properties": {
+                            "data_refresh": {
+                                "description": "Whether the project source data should be refreshed",
+                                "default": false,
+                                "type": "boolean",
+                                "example": true
+                            },
+                            "executive_js": {
+                                "description": "Whether the project source should execute JavaScript",
+                                "default": true,
+                                "type": "boolean",
+                                "example": true
+                            },
+                            "data_refresh_frequency": {
+                                "description": "The project source data refresh frequency",
+                                "default": "never",
+                                "type": "string",
+                                "example": "never"
+                            },
+                            "sitemap_path": {
+                                "description": "The project source sitemap path",
+                                "type": "string",
+                                "example": "https:\/\/example.com\/sitemap.xml"
+                            }
+                        }
+                    },
+                    "pages": {
+                        "description": "The project source pages",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#\/components\/schemas\/Page"
+                        },
+                        "nullable": true
                     }
                 }
             },
@@ -2193,8 +2728,8 @@
                                             "description": "The error message",
                                             "enum": [
                                                 "Project plugin id is required",
-                                                "Project plugin with id {projectPluginId} not found",
-                                                "Project plugin with slug {slug} not found"
+                                                "Project plugin with id {pluginId} not found",
+                                                "Plugin for project with id {projectId} not found"
                                             ],
                                             "type": "string",
                                             "example": "Project plugin with id 1 not found"
@@ -2273,7 +2808,7 @@
                                 "data": {
                                     "type": "object",
                                     "properties": {
-                                        "": {
+                                        "ProjectSettings": {
                                             "$ref": "#\/components\/schemas\/ProjectSettings"
                                         }
                                     }
@@ -2507,7 +3042,7 @@
                 }
             },
             "ListProjectPluginResponse": {
-                "description": "Retrieve certain project plugin by given slug",
+                "description": "Project plugin that belong to a certain project",
                 "content": {
                     "application\/json": {
                         "schema": {
@@ -2525,7 +3060,7 @@
                                 "data": {
                                     "type": "object",
                                     "properties": {
-                                        "projectPlugin": {
+                                        "ProjectPlugin": {
                                             "$ref": "#\/components\/schemas\/ProjectPlugin"
                                         }
                                     }
@@ -2587,6 +3122,35 @@
                                             "description": "Whether the project was updated successfully or not",
                                             "type": "boolean",
                                             "example": true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "UpdateProjectPluginResponse": {
+                "description": "Project plugin have been updated",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "success"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "properties": {
+                                        "ProjectPlugin": {
+                                            "$ref": "#\/components\/schemas\/ProjectPlugin"
                                         }
                                     }
                                 }
@@ -2733,6 +3297,35 @@
                     }
                 }
             },
+            "CreateProjectPluginResponse": {
+                "description": "Project plugin have been created",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "success"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "properties": {
+                                        "ProjectPlugin": {
+                                            "$ref": "#\/components\/schemas\/ProjectPlugin"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "UpdateProjectSettingsErrorResponse": {
                 "description": "Update project settings failed",
                 "content": {
@@ -2865,6 +3458,10 @@
         {
             "name": "Project Settings",
             "description": "API Endpoints for Project Settings"
+        },
+        {
+            "name": "Project Plugins",
+            "description": "API Endpoints for Project Plugins"
         },
         {
             "name": "Conversations",
