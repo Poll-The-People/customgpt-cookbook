@@ -49,7 +49,7 @@ def test_plugins():
       "keywords": "Indoor plants, Gardening, Trusted information.",
       "description": "Trusted information about indoor plants and gardening.",
       "is_active": True
-		})
+	})
 
     url = api_endpoint + 'projects' + f"/{project_id}/" + 'plugins'
     create_plugin = requests.request('POST', url, headers=headers, data=payload)
@@ -68,7 +68,7 @@ def test_plugins():
       "keywords": "Indoor plants, Gardening, Trusted information.",
       "description": "Trusted information about indoor plants and gardening.",
       "is_active": True
-		})
+	})
 
     url = api_endpoint + 'projects' + f"/{project_id}/" + 'plugins'
     update_plugin = requests.request('PUT', url, headers=headers, data=payload)
