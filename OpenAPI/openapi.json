@@ -23,7 +23,7 @@
                     "Projects"
                 ],
                 "summary": "List all projects.",
-                "description": "Get a list of all projects that belong to the user.",
+                "description": "Returns a list of your projects. The projects are returned sorted by creation date, with the most recent projects appearing first. It is a paginated API and you can use the page parameter to fetch the next page of projects. The default page size is 10.\n\nHere is an example to list projects: using [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/List_all_projects_for_an_account_with_pagination.ipynb) and using our python [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_List_all_projects_using_pagination.ipynb).",
                 "parameters": [
                     {
                         "name": "page",
@@ -32,18 +32,19 @@
                         "required": false,
                         "schema": {
                             "default": 1,
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     },
                     {
                         "name": "duration",
                         "in": "query",
-                        "description": "The duration of the projects to list. Defaults to 90 days.",
+                        "description": "The duration of the projects to list.",
                         "required": false,
                         "schema": {
-                            "default": 90,
                             "type": "integer"
-                        }
+                        },
+                        "example": 90
                     },
                     {
                         "name": "order",
@@ -188,7 +189,7 @@
                     "Projects"
                 ],
                 "summary": "Create a new project.",
-                "description": "Create a new project from either sitemap or uploaded file.",
+                "description": "Create a new project by importing data either from a sitemap or an uploaded file. This endpoint enables you to initiate the creation of a new project by supplying the necessary project data that will be used as the context. You can choose to import the project structure and content from a sitemap url or upload a specific file format that contains the context can be any text, audio or video format. The system will process the provided data and generate a new project based on the imported or uploaded information.\nHere is an example to create a bot using a sitemap: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Create_Bot_By_Sitemap.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Create_Bot_By_Sitemap.ipynb).",
                 "requestBody": {
                     "description": "Create a new project from a sitemap or a file",
                     "content": {
@@ -249,7 +250,7 @@
                     "Projects"
                 ],
                 "summary": "Show a certain project.",
-                "description": "View a specific project by project ID.",
+                "description": "Retrieve details of a project based on its unique project ID. This endpoint allows you to fetch specific information about a project.",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -288,6 +289,9 @@
                     "200": {
                         "$ref": "#\/components\/responses\/ListProjectResponse"
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -308,7 +312,8 @@
                 "tags": [
                     "Projects"
                 ],
-                "summary": "Update a certain project",
+                "summary": "Update a certain project.",
+                "description": "Update a project with specific details based on its unique projectId. This endpoint allows you to modify and revise the information associated with a particular project\nHere is an example to a update a specific object: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Update%20a%20project%20name.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Update_a_project_name.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -362,6 +367,9 @@
                     "200": {
                         "$ref": "#\/components\/responses\/UpdateProjectResponse"
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -383,7 +391,7 @@
                     "Projects"
                 ],
                 "summary": "Delete a certain project.",
-                "description": "Delete an existing project by project ID.",
+                "description": "Delete a project by its unique project ID. This endpoint allows you to remove an existing project from the system based on its ID.\nHere is an example to delete a project: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Delete_a_project.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Delete_a_project.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -398,6 +406,9 @@
                 "responses": {
                     "200": {
                         "$ref": "#\/components\/responses\/DeleteProjectResponse"
+                    },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
                     },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
@@ -422,7 +433,7 @@
                     "Projects"
                 ],
                 "summary": "Get the stats for a certain project.",
-                "description": "Get the stats for a project by `projectId`.",
+                "description": "Retrieve statistical data for a project using its unique projectId. This endpoint provides extensive statistics about the project's performance, activity, or other relevant metrics.\nHere is an example to a specific object stats: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Get_Project_Stats.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Get_Project_Stats.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -437,6 +448,9 @@
                 "responses": {
                     "200": {
                         "$ref": "#\/components\/responses\/ProjectStatsResponse"
+                    },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
                     },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
@@ -461,7 +475,7 @@
                     "Pages"
                 ],
                 "summary": "List all pages that belong to a project.",
-                "description": "Get a list of all pages that belong to a project.",
+                "description": "Retrieve a list of all pages associated with a project. This endpoint allows you to fetch project details and a collection of pages that belong to a specific project. Each page object includes information such as the page ID, URL, hash of the URL, project ID, crawl status, index status, file details (if applicable), creation and update timestamps, and other relevant attributes.\nHere is an example to list all pages belonging to project: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/List_all_pages_of_a_project.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_List_all_pages_belonging_to_a_project.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -604,6 +618,9 @@
                             }
                         }
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -627,7 +644,7 @@
                     "Pages"
                 ],
                 "summary": "Delete a certain page that belongs to a certain project.",
-                "description": "Delete a certain page of a specific project by `projectId` and `pageId`.",
+                "description": "Delete a specific page within a project based on its unique projectId and pageId. This endpoint allows you to remove a particular page from the project, permanently deleting its associated context.\nHere is an example to delete a certain page: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Delete_a_page_from_the_project.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Delete_a_project_page.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -652,11 +669,93 @@
                     "200": {
                         "$ref": "#\/components\/responses\/DeleteProjectResponse"
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
                     "404": {
                         "$ref": "#\/components\/responses\/ProjectNotFoundErrorResponse"
+                    },
+                    "500": {
+                        "$ref": "#\/components\/responses\/InternalServerErrorResponse"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ]
+            }
+        },
+        "\/api\/v1\/projects\/{projectId}\/pages\/{pageId}\/reindex": {
+            "post": {
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "Reindex a certain page that belongs to a certain project.",
+                "description": "Reindex a specific page within a project based on its unique projectId and pageId. This endpoint allows you to refresh a particular page from the project. Our system will crawl and index page content newly.",
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The unique project identifier.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "pageId",
+                        "in": "path",
+                        "description": "The page id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Page reindex process start successfully",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The status of the response",
+                                            "enum": [
+                                                "error",
+                                                "success"
+                                            ],
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "updated": {
+                                                    "description": "Whether the page start reindex process successfully or not",
+                                                    "type": "boolean",
+                                                    "example": true
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
+                    "401": {
+                        "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
+                    },
+                    "403": {
+                        "$ref": "#\/components\/responses\/PageReindexErrorResponse"
                     },
                     "500": {
                         "$ref": "#\/components\/responses\/InternalServerErrorResponse"
@@ -675,7 +774,7 @@
                     "Project Settings"
                 ],
                 "summary": "Get project settings.",
-                "description": "Retrieve the current project settings for a project.",
+                "description": "Retrieve the project settings for a specific project. This endpoint allows you to fetch the configuration and settings associated with the project.\nHere is an example to get a project settings: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Get_Settings_for_a_particular_project.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Get_settings_for_a_particular_project.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -690,6 +789,9 @@
                 "responses": {
                     "200": {
                         "$ref": "#\/components\/responses\/ListProjectSettingsResponse"
+                    },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
                     },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
@@ -712,7 +814,7 @@
                     "Project Settings"
                 ],
                 "summary": "Update project settings.",
-                "description": "Update project settings of a specific project by `projectId`.",
+                "description": "Update the project settings for a specific project. This endpoint allows you to update the configuration and settings associated with the project.\nHere is an example to get a project settings: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Update_settings_for_a_particular_project.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Update_project_settings.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -773,6 +875,12 @@
                                         "type": "string",
                                         "maxLength": 9,
                                         "example": "#000000"
+                                    },
+                                    "persona_instructions": {
+                                        "description": "Role instructions for persona or null if persona must be delete",
+                                        "type": "string",
+                                        "nullable": true,
+                                        "example": "You are a custom chatbot assistant called CustomGPT, a friendly lawyer who answers questions based on the given context."
                                     }
                                 }
                             }
@@ -806,7 +914,7 @@
                     "Project Plugins"
                 ],
                 "summary": "Show a certain project plugin.",
-                "description": "Retrieve the plugin for a project.",
+                "description": "Retrieve the plugin details associated with a project. This endpoint provides information about the project plugin.",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -822,6 +930,9 @@
                 "responses": {
                     "200": {
                         "$ref": "#\/components\/responses\/ListProjectPluginResponse"
+                    },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
                     },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
@@ -844,7 +955,7 @@
                     "Project Plugins"
                 ],
                 "summary": "Create a plugin.",
-                "description": "Create a new plugin for a specific project by `projectId`.",
+                "description": "Create a new plugin for a specific project identified by its unique projectId. This endpoint enables you to create a custom plugin for the project. Which allows you to share the custom chatbot as openai plugin to be shared globally.",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -898,6 +1009,9 @@
                     "201": {
                         "$ref": "#\/components\/responses\/CreateProjectPluginResponse"
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -919,7 +1033,7 @@
                     "Project Plugins"
                 ],
                 "summary": "Update a plugin.",
-                "description": "Update plugin of a specific project by `projectId`.",
+                "description": "Update the plugin configuration for a specific project identified by its unique projectId. This endpoint allows you to update the associated attributes of the plugin.",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -973,6 +1087,9 @@
                     "200": {
                         "$ref": "#\/components\/responses\/UpdateProjectPluginResponse"
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -996,7 +1113,7 @@
                     "Conversations"
                 ],
                 "summary": "List all conversations for a project.",
-                "description": "Retrieve all conversations for a project by `projectId`.",
+                "description": "Retrieve all conversations associated with a project based on its unique projectId. This endpoint allows you to fetch a collection of conversations related to a specific project.",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -1138,6 +1255,9 @@
                             }
                         }
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -1159,7 +1279,7 @@
                     "Conversations"
                 ],
                 "summary": "Create a new conversation.",
-                "description": "Create a new conversation for a project by `projectId`.",
+                "description": "Create a new conversation for a project identified by its unique projectId. This endpoint allows you to initiate a new conversation within a specific project. A conversation serves as a platform for users to exchange messages regarding project-related matters. By providing the projectId, you can establish a conversation within the context of the project allowing you to seamlessly communicate with it.\nHere is an example to create a conversation: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Create_a_new_conversation_and_send_a_message_to_the_conversation.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Create_a_new_conversation_and_send_a_message_to_the_conversation.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -1193,6 +1313,9 @@
                     "201": {
                         "$ref": "#\/components\/responses\/CreateConversationResponse"
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -1216,7 +1339,7 @@
                     "Conversations"
                 ],
                 "summary": "Update a conversation.",
-                "description": "Update a conversation by `projectId` and `sessionId`.",
+                "description": "Update a conversation within a project identified by its unique projectId and sessionId. This endpoint allows you to modify and update the properties of a specific conversation. By providing the projectId and sessionId, you can target the desired conversation and make changes to its attributes.\nHere is an example to update a conversation: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Update_Delete_a_conversation.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Update_Delete_a_conversation.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -1279,6 +1402,9 @@
                             }
                         }
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -1300,7 +1426,7 @@
                     "Conversations"
                 ],
                 "summary": "Delete a conversation.",
-                "description": "Delete a conversation by `projectId` and `sessionId`.",
+                "description": "Delete a conversation within a project identified by its unique projectId and sessionId. This endpoint allows you to remove a specific conversation from the project, permanently deleting all associated messages. By providing the projectId and sessionId, you can target the conversation to be deleted, ensuring the removal of all conversation-related data.\nHere is an example to delete a conversation: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Update_Delete_a_conversation.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Update_Delete_a_conversation.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -1325,6 +1451,9 @@
                     "200": {
                         "$ref": "#\/components\/responses\/DeleteProjectResponse"
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -1348,7 +1477,7 @@
                     "Conversations"
                 ],
                 "summary": "Retrieve messages that have been sent in a conversation.",
-                "description": "Get all the messages that have been sent in a conversation by `projectId` and `sessionId`.",
+                "description": "Retrieve all messages sent within a conversation of a project identified by its unique projectId and sessionId. This endpoint allows you to retrieve a collection of messages exchanged in a specific conversation. Messages contain the content, timestamps, and other relevant information shared during the course of the conversation. By providing the projectId and sessionId, you can access all the messages associated with that particular conversation within the project context.\nHere is an example to retrieve messages of a conversation: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Retrieve_messages_for_a_conversation.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Retrieve_Messages_of_conversation.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -1400,6 +1529,9 @@
                     "200": {
                         "$ref": "#\/components\/responses\/ConversationMessageListResponse"
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -1421,7 +1553,7 @@
                     "Conversations"
                 ],
                 "summary": "Send a message to a conversation.",
-                "description": "Send a message to a conversation by `projectId` and `sessionId`.",
+                "description": "Send a message to a conversation within a project identified by its unique projectId and sessionId. This endpoint enables you to send a new message to a specific conversation, facilitating seamless communication and collaboration within the project. By providing the projectId and sessionId, you can target the desired conversation and contribute to the ongoing discussion. This API endpoint supports real-time streaming, allowing for instant message delivery and dynamic updates which enables efficient and interactive communication between the user and chatbot.\nHere is an example to send a message to a conversation: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Create_a_new_conversation_and_send_a_message_to_the_conversation.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Create_a_new_conversation_and_send_a_message_to_the_conversation.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -1446,7 +1578,7 @@
                     {
                         "name": "stream",
                         "in": "query",
-                        "description": "Whether to stream the response or not",
+                        "description": "Whether to stream the response or not, if stream the responses will be sent as data-only server-sent events as they become available, with the stream terminated by a `status: \"finish\"` message. [Example Python code](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Create_a_new_conversation_and_send_a_message_to_the_conversation.ipynb).",
                         "required": false,
                         "schema": {
                             "default": false,
@@ -1485,6 +1617,9 @@
                     "200": {
                         "$ref": "#\/components\/responses\/SendConversationResponse"
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -1508,7 +1643,7 @@
                     "Citations"
                 ],
                 "summary": "Get the Open Graph data for a citation.",
-                "description": "Get the Open Graph data for a citation by its unique identifier.",
+                "description": "Retrieve the Open Graph data for a citation based on its unique identifier. This endpoint allows you to fetch the Open Graph metadata associated with a specific citation.\nHere is an example to get citation detail: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Get_citation_details.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Get_Citation_Details.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -1554,6 +1689,9 @@
                             }
                         }
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -1574,7 +1712,7 @@
                     "Sources"
                 ],
                 "summary": "List a certain project's sources.",
-                "description": "List all sources for a given project.",
+                "description": "Retrieve a list of all sources associated with a given project. This endpoint provides a collection of sources that are linked to a specific project. Sources serve as references or contexts for the project.",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -1589,6 +1727,9 @@
                 "responses": {
                     "200": {
                         "$ref": "#\/components\/responses\/ListProjectsResponse"
+                    },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
                     },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
@@ -1611,7 +1752,7 @@
                     "Sources"
                 ],
                 "summary": "Create a new project source.",
-                "description": "Create a new source for a given project.",
+                "description": "Create a new data source for a given project, allowing you to add additional context by specifying a sitemap URL or uploading a file. This endpoint enables you to enrich the project's information by incorporating relevant data sources.\nHere is an example to add a new source to project: [API](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/Add_a_sitemap_to_an_existing_project.ipynb) [SDK](https:\/\/github.com\/Poll-The-People\/customgpt-cookbook\/blob\/main\/examples\/SDK_Add_a_Sitemap_to_project.ipynb).",
                 "parameters": [
                     {
                         "name": "projectId",
@@ -1734,6 +1875,9 @@
                             }
                         }
                     },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -1768,6 +1912,9 @@
                     }
                 ],
                 "responses": {
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadArgumentErrorResponse"
+                    },
                     "401": {
                         "$ref": "#\/components\/responses\/ApiTokenValidationErrorResponse"
                     },
@@ -1791,7 +1938,7 @@
                     "Users"
                 ],
                 "summary": "Show the user's profile.",
-                "description": "Retrieve the current user's profile.",
+                "description": "Retrieve the profile information of the current user. This endpoint allows you to fetch the details and attributes associated with the user's profile, providing valuable information about the user's account and preferences.",
                 "responses": {
                     "200": {
                         "description": "Retrieve user account info",
@@ -1835,7 +1982,7 @@
                     "Users"
                 ],
                 "summary": "Update the user's profile.",
-                "description": "Update the current user's profile.",
+                "description": "Update the profile of the current user. This endpoint allows the user to modify and update their profile information and preferences within the application or system.",
                 "requestBody": {
                     "description": "Update user account info",
                     "content": {
@@ -1901,6 +2048,62 @@
     },
     "components": {
         "schemas": {
+            "ProjectSettings": {
+                "type": "object",
+                "properties": {
+                    "chatbot_avatar": {
+                        "description": "The chatbot avatar",
+                        "type": "string",
+                        "example": "https:\/\/example.com\/chatbot_avatar.png"
+                    },
+                    "chatbot_background": {
+                        "description": "The chatbot background",
+                        "type": "string",
+                        "example": "https:\/\/example.com\/chatbot_background.png"
+                    },
+                    "default_prompt": {
+                        "description": "The default prompt",
+                        "type": "string",
+                        "example": "How can I help you?"
+                    },
+                    "example_questions": {
+                        "description": "The example questions",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "How do I get started?"
+                        ]
+                    },
+                    "response_source": {
+                        "description": "The response source",
+                        "enum": [
+                            "Default",
+                            "My Content",
+                            "My Content + ChatGPT"
+                        ],
+                        "type": "string",
+                        "example": "https:\/\/example.com\/response_source.json"
+                    },
+                    "chatbot_msg_lang": {
+                        "description": "The chatbot message language",
+                        "type": "string",
+                        "example": "en"
+                    },
+                    "chatbot_color": {
+                        "description": "The chatbot color in hex format",
+                        "type": "string",
+                        "example": "#000000"
+                    },
+                    "persona_instructions": {
+                        "description": "Role instructions for persona or null if persona must be delete",
+                        "type": "string",
+                        "nullable": true,
+                        "example": "You are a custom chatbot assistant called CustomGPT, a friendly lawyer who answers questions based on the given context."
+                    }
+                }
+            },
             "OpenGraphCache": {
                 "type": "object",
                 "properties": {
@@ -1948,273 +2151,6 @@
                         "description": "The site name of the page",
                         "type": "string",
                         "example": "Example Domain"
-                    }
-                }
-            },
-            "User": {
-                "type": "object",
-                "properties": {
-                    "created_at": {
-                        "description": "When was this user created?",
-                        "format": "date-time",
-                        "type": "string",
-                        "example": "2023-04-30 16:43:53"
-                    },
-                    "email": {
-                        "description": "User email",
-                        "format": "email",
-                        "type": "string",
-                        "example": "user@domain.com"
-                    },
-                    "id": {
-                        "description": "User ID",
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "name": {
-                        "description": "User name",
-                        "type": "string",
-                        "example": "John Doe"
-                    },
-                    "profile_photo_url": {
-                        "description": "User profile photo URL",
-                        "format": "url",
-                        "type": "string",
-                        "example": "https:\/\/app.customgpt.ai\/user\/1\/profile_photo_url"
-                    },
-                    "updated_at": {
-                        "description": "When was this user updated?",
-                        "format": "date-time",
-                        "type": "string",
-                        "example": "2023-04-30 16:43:53"
-                    }
-                }
-            },
-            "Project": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "description": "Project ID",
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "project_name": {
-                        "description": "Project name",
-                        "type": "string",
-                        "example": "My Project"
-                    },
-                    "sitemap_path": {
-                        "description": "Project sitemap",
-                        "type": "string",
-                        "example": "https:\/\/www.example.com\/sitemap.xml"
-                    },
-                    "is_chat_active": {
-                        "description": "Whether the chat bot is active or not",
-                        "default": false,
-                        "type": "boolean",
-                        "example": true
-                    },
-                    "user_id": {
-                        "description": "User ID of the project owner",
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "created_at": {
-                        "description": "Date and time when the project was created",
-                        "default": "2023-05-08 13:06:55",
-                        "format": "date-time",
-                        "type": "string",
-                        "example": "2021-01-01 00:00:00"
-                    },
-                    "updated_at": {
-                        "description": "Date and time when the project was last updated",
-                        "default": "2023-05-08 13:06:55",
-                        "format": "date-time",
-                        "type": "string",
-                        "example": "2021-01-01 00:00:00"
-                    },
-                    "deleted_at": {
-                        "description": "Date and time when the project was deleted",
-                        "format": "date-time",
-                        "type": "string",
-                        "nullable": true,
-                        "example": "2021-01-01 00:00:00"
-                    },
-                    "type": {
-                        "description": "Project type",
-                        "enum": [
-                            "SITEMAP",
-                            "URL"
-                        ],
-                        "default": "SITEMAP",
-                        "type": "string",
-                        "example": "SITEMAP"
-                    },
-                    "is_shared": {
-                        "description": "Whether the project is shared or not",
-                        "default": false,
-                        "type": "boolean",
-                        "example": true
-                    },
-                    "shareable_slug": {
-                        "description": "Shareable slug that can be used to share the project",
-                        "format": "md5",
-                        "type": "string",
-                        "nullable": true,
-                        "example": "1234567890abcdef1234567890abcdef"
-                    },
-                    "shareable_link": {
-                        "description": "Shareable link that can be used to share the project",
-                        "format": "url",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "embed_code": {
-                        "description": "Embed code that can be used to embed the project",
-                        "format": "html",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "live_chat_code": {
-                        "description": "Live chat code that can be used to embed the live chat",
-                        "format": "html",
-                        "type": "string",
-                        "nullable": true
-                    }
-                }
-            },
-            "PromptHistory": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "description": "The unique identifier of the prompt history.",
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "user_id": {
-                        "description": "The unique identifier of the user.",
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "user_query": {
-                        "description": "The user prompt query.",
-                        "type": "string",
-                        "example": "What is the meaning of life?"
-                    },
-                    "openai_response": {
-                        "description": "The OpenAI response to the user prompt query.",
-                        "type": "string",
-                        "example": "The meaning of life is to be happy."
-                    },
-                    "created_at": {
-                        "description": "The date and time the prompt history was created.",
-                        "format": "date-time",
-                        "type": "string",
-                        "example": "2021-01-01 00:00:00"
-                    },
-                    "updated_at": {
-                        "description": "The date and time the prompt history was last updated.",
-                        "format": "date-time",
-                        "type": "string",
-                        "example": "2021-01-01 00:00:00"
-                    },
-                    "conversation_id": {
-                        "description": "The unique identifier of the conversation.",
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "citations": {
-                        "description": "The citations for the prompt history.",
-                        "default": [],
-                        "type": "array",
-                        "example": [
-                            1,
-                            2,
-                            3
-                        ]
-                    }
-                }
-            },
-            "ProjectSettings": {
-                "type": "object",
-                "properties": {
-                    "chatbot_avatar": {
-                        "description": "The chatbot avatar",
-                        "type": "string",
-                        "example": "https:\/\/example.com\/chatbot_avatar.png"
-                    },
-                    "chatbot_background": {
-                        "description": "The chatbot background",
-                        "type": "string",
-                        "example": "https:\/\/example.com\/chatbot_background.png"
-                    },
-                    "default_prompt": {
-                        "description": "The default prompt",
-                        "type": "string",
-                        "example": "How can I help you?"
-                    },
-                    "example_questions": {
-                        "description": "The example questions",
-                        "type": "array",
-                        "example": [
-                            "How do I get started?"
-                        ]
-                    },
-                    "response_source": {
-                        "description": "The response source",
-                        "enum": [
-                            "Default",
-                            "My Content",
-                            "My Content + ChatGPT"
-                        ],
-                        "type": "string",
-                        "example": "https:\/\/example.com\/response_source.json"
-                    },
-                    "chatbot_msg_lang": {
-                        "description": "The chatbot message language",
-                        "type": "string",
-                        "example": "en"
-                    },
-                    "chatbot_color": {
-                        "description": "The chatbot color in hex format",
-                        "type": "string",
-                        "example": "#000000"
-                    }
-                }
-            },
-            "ProjectPlugin": {
-                "type": "object",
-                "properties": {
-                    "model_name": {
-                        "description": "Model Name",
-                        "type": "string",
-                        "example": "IndoorPlants"
-                    },
-                    "human_name": {
-                        "description": "Name For Human",
-                        "type": "string",
-                        "example": "The Indoor Plants Channel"
-                    },
-                    "keywords": {
-                        "description": "Keywords For Model",
-                        "type": "string",
-                        "example": "Indoor plants, Gardening, Trusted information."
-                    },
-                    "description": {
-                        "description": "Description For Human",
-                        "type": "string",
-                        "example": "Trusted information about indoor plants and gardening."
-                    },
-                    "logo": {
-                        "description": "Project plugin logo",
-                        "type": "string",
-                        "example": "https:\/\/app.customgpt.ai\/logo.svg"
-                    },
-                    "is_active": {
-                        "description": "Whether the project plugin is active or not",
-                        "default": false,
-                        "type": "boolean",
-                        "example": true
                     }
                 }
             },
@@ -2319,6 +2255,174 @@
                     }
                 }
             },
+            "Project": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "description": "Project ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "project_name": {
+                        "description": "Project name",
+                        "type": "string",
+                        "example": "My Project"
+                    },
+                    "sitemap_path": {
+                        "description": "Project sitemap",
+                        "type": "string",
+                        "example": "https:\/\/www.example.com\/sitemap.xml"
+                    },
+                    "is_chat_active": {
+                        "description": "Whether the chat bot is active or not",
+                        "default": false,
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "user_id": {
+                        "description": "User ID of the project owner",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "description": "Date and time when the project was created",
+                        "default": "2023-05-08 13:06:55",
+                        "format": "date-time",
+                        "type": "string",
+                        "example": "2021-01-01 00:00:00"
+                    },
+                    "updated_at": {
+                        "description": "Date and time when the project was last updated",
+                        "default": "2023-05-08 13:06:55",
+                        "format": "date-time",
+                        "type": "string",
+                        "example": "2021-01-01 00:00:00"
+                    },
+                    "deleted_at": {
+                        "description": "Date and time when the project was deleted",
+                        "format": "date-time",
+                        "type": "string",
+                        "nullable": true,
+                        "example": "2021-01-01 00:00:00"
+                    },
+                    "type": {
+                        "description": "Project type",
+                        "enum": [
+                            "SITEMAP",
+                            "URL"
+                        ],
+                        "default": "SITEMAP",
+                        "type": "string",
+                        "example": "SITEMAP"
+                    },
+                    "is_shared": {
+                        "description": "Whether the project is shared or not",
+                        "default": false,
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "shareable_slug": {
+                        "description": "Shareable slug that can be used to share the project",
+                        "format": "md5",
+                        "type": "string",
+                        "nullable": true,
+                        "example": "1234567890abcdef1234567890abcdef"
+                    },
+                    "shareable_link": {
+                        "description": "Shareable link that can be used to share the project",
+                        "format": "url",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "embed_code": {
+                        "description": "Embed code that can be used to embed the project",
+                        "format": "html",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "live_chat_code": {
+                        "description": "Live chat code that can be used to embed the live chat",
+                        "format": "html",
+                        "type": "string",
+                        "nullable": true
+                    }
+                }
+            },
+            "User": {
+                "type": "object",
+                "properties": {
+                    "created_at": {
+                        "description": "When was this user created?",
+                        "format": "date-time",
+                        "type": "string",
+                        "example": "2023-04-30 16:43:53"
+                    },
+                    "email": {
+                        "description": "User email",
+                        "format": "email",
+                        "type": "string",
+                        "example": "user@domain.com"
+                    },
+                    "id": {
+                        "description": "User ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "User name",
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "profile_photo_url": {
+                        "description": "User profile photo URL",
+                        "format": "url",
+                        "type": "string",
+                        "example": "https:\/\/app.customgpt.ai\/user\/1\/profile_photo_url"
+                    },
+                    "updated_at": {
+                        "description": "When was this user updated?",
+                        "format": "date-time",
+                        "type": "string",
+                        "example": "2023-04-30 16:43:53"
+                    }
+                }
+            },
+            "ProjectPlugin": {
+                "type": "object",
+                "properties": {
+                    "model_name": {
+                        "description": "Model Name",
+                        "type": "string",
+                        "example": "IndoorPlants"
+                    },
+                    "human_name": {
+                        "description": "Name For Human",
+                        "type": "string",
+                        "example": "The Indoor Plants Channel"
+                    },
+                    "keywords": {
+                        "description": "Keywords For Model",
+                        "type": "string",
+                        "example": "Indoor plants, Gardening, Trusted information."
+                    },
+                    "description": {
+                        "description": "Description For Human",
+                        "type": "string",
+                        "example": "Trusted information about indoor plants and gardening."
+                    },
+                    "logo": {
+                        "description": "Project plugin logo",
+                        "type": "string",
+                        "example": "https:\/\/app.customgpt.ai\/logo.svg"
+                    },
+                    "is_active": {
+                        "description": "Whether the project plugin is active or not",
+                        "default": false,
+                        "type": "boolean",
+                        "example": true
+                    }
+                }
+            },
             "ProjectSource": {
                 "type": "object",
                 "properties": {
@@ -2387,6 +2491,80 @@
                     }
                 }
             },
+            "PromptHistory": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "description": "The unique identifier of the prompt history.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "The unique identifier of the user.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_query": {
+                        "description": "The user prompt query.",
+                        "type": "string",
+                        "example": "What is the meaning of life?"
+                    },
+                    "openai_response": {
+                        "description": "The OpenAI response to the user prompt query.",
+                        "type": "string",
+                        "example": "The meaning of life is to be happy."
+                    },
+                    "created_at": {
+                        "description": "The date and time the prompt history was created.",
+                        "format": "date-time",
+                        "type": "string",
+                        "example": "2021-01-01 00:00:00"
+                    },
+                    "updated_at": {
+                        "description": "The date and time the prompt history was last updated.",
+                        "format": "date-time",
+                        "type": "string",
+                        "example": "2021-01-01 00:00:00"
+                    },
+                    "conversation_id": {
+                        "description": "The unique identifier of the conversation.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "citations": {
+                        "description": "The citations for the prompt history.",
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "example": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "properties": {
+                            "user_ip": {
+                                "description": "The IP address of the user.",
+                                "type": "string",
+                                "example": "127.0.0.1"
+                            },
+                            "user_agent": {
+                                "description": "The user agent of the user.",
+                                "type": "string",
+                                "example": "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko)"
+                            }
+                        },
+                        "example": {
+                            "user_ip": "127.0.0.1",
+                            "user_agent": "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko)"
+                        }
+                    }
+                }
+            },
             "Conversation": {
                 "type": "object",
                 "properties": {
@@ -2438,8 +2616,114 @@
             }
         },
         "responses": {
-            "ListProjectsResponse": {
-                "description": "Successfully retrieved list of sources that belong to a project.",
+            "FlaskServiceErrorResponse": {
+                "description": "Service unavailable",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "url": {
+                                    "description": "The URL of the request",
+                                    "type": "string",
+                                    "example": "https:\/\/app.customgpt.ai\/api\/v1\/projects\/1"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "The error status code",
+                                            "enum": [
+                                                400,
+                                                401,
+                                                403,
+                                                404,
+                                                500,
+                                                503
+                                            ],
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "message": {
+                                            "description": "The error message",
+                                            "enum": [
+                                                "Sitemap URL is empty",
+                                                "Our system could not validate your sitemap",
+                                                "Our system could not detect any pages in your sitemap"
+                                            ],
+                                            "type": "string",
+                                            "example": "Sitemap URL is empty"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "PageReindexErrorResponse": {
+                "description": "Page cannot be reindexed",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "url": {
+                                    "description": "The URL of the request",
+                                    "type": "string",
+                                    "example": "https:\/\/app.customgpt.ai\/api\/v1\/projects\/1"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "The error status code",
+                                            "enum": [
+                                                400,
+                                                401,
+                                                403,
+                                                404,
+                                                500,
+                                                503
+                                            ],
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "message": {
+                                            "description": "The error message",
+                                            "enum": [
+                                                "Page with id {pageId} cannot be reindexed"
+                                            ],
+                                            "type": "string",
+                                            "example": "Page with id 1 cannot be reindexed"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "CreateProjectSourceResponse": {
+                "description": "Successfully created a new project source.",
                 "content": {
                     "application\/json": {
                         "schema": {
@@ -2455,21 +2739,7 @@
                                     "example": "success"
                                 },
                                 "data": {
-                                    "type": "object",
-                                    "properties": {
-                                        "sitemaps": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#\/components\/schemas\/ProjectSource"
-                                            }
-                                        },
-                                        "uploads": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#\/components\/schemas\/ProjectSource"
-                                            }
-                                        }
-                                    }
+                                    "$ref": "#\/components\/schemas\/ProjectSource"
                                 }
                             }
                         }
@@ -2507,8 +2777,8 @@
                     }
                 }
             },
-            "SendConversationResponse": {
-                "description": "Send a message to a conversation",
+            "ListProjectsResponse": {
+                "description": "Successfully retrieved list of sources that belong to a project.",
                 "content": {
                     "application\/json": {
                         "schema": {
@@ -2524,15 +2794,26 @@
                                     "example": "success"
                                 },
                                 "data": {
-                                    "$ref": "#\/components\/schemas\/PromptHistory"
+                                    "type": "object",
+                                    "properties": {
+                                        "sitemaps": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#\/components\/schemas\/ProjectSource"
+                                            }
+                                        },
+                                        "uploads": {
+                                            "$ref": "#\/components\/schemas\/ProjectSource"
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
             },
-            "UpdateProjectResponse": {
-                "description": "Project has been updated",
+            "ProjectStatsResponse": {
+                "description": "Project stats",
                 "content": {
                     "application\/json": {
                         "schema": {
@@ -2548,31 +2829,39 @@
                                     "example": "success"
                                 },
                                 "data": {
-                                    "$ref": "#\/components\/schemas\/Project"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "ListProjectSettingsResponse": {
-                "description": "Project settings that belong to a certain project",
-                "content": {
-                    "application\/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "description": "The status of the response",
-                                    "enum": [
-                                        "error",
-                                        "success"
-                                    ],
-                                    "type": "string",
-                                    "example": "success"
-                                },
-                                "data": {
-                                    "$ref": "#\/components\/schemas\/ProjectSettings"
+                                    "type": "object",
+                                    "properties": {
+                                        "pages_found": {
+                                            "description": "Number of pages found for the project",
+                                            "type": "integer",
+                                            "example": 100
+                                        },
+                                        "pages_crawled": {
+                                            "description": "Number of pages crawled for the project",
+                                            "type": "integer",
+                                            "example": 100
+                                        },
+                                        "pages_indexed": {
+                                            "description": "Number of pages indexed for the project",
+                                            "type": "integer",
+                                            "example": 100
+                                        },
+                                        "crawl_credits_used": {
+                                            "description": "Number of crawl credits used for the project",
+                                            "type": "integer",
+                                            "example": 100
+                                        },
+                                        "query_credits_used": {
+                                            "description": "Number of query credits used for the project",
+                                            "type": "integer",
+                                            "example": 100
+                                        },
+                                        "index_credits_used": {
+                                            "description": "Number of index credits used for the project",
+                                            "type": "integer",
+                                            "example": 100
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -2633,8 +2922,56 @@
                     }
                 }
             },
-            "UpdateProjectSettingsErrorResponse": {
-                "description": "Update project settings failed",
+            "ApiTokenValidationErrorResponse": {
+                "description": "API Token is either missing or invalid",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "url": {
+                                    "description": "The URL of the request",
+                                    "type": "string",
+                                    "example": "https:\/\/app.customgpt.ai\/api\/v1\/projects\/1"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "The error status code",
+                                            "enum": [
+                                                400,
+                                                401,
+                                                403,
+                                                404,
+                                                500,
+                                                503
+                                            ],
+                                            "type": "integer",
+                                            "example": 401
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "API Token is either missing or invalid"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "BadArgumentErrorResponse": {
+                "description": "Bad Argument",
                 "content": {
                     "application\/json": {
                         "schema": {
@@ -2672,15 +3009,58 @@
                                         },
                                         "message": {
                                             "description": "The error message",
-                                            "enum": [
-                                                "Please upload a valid image file for avatar",
-                                                "Please upload a valid image file for background",
-                                                "Language Proficiency is required."
-                                            ],
                                             "type": "string",
-                                            "example": "Please upload a valid image file for avatar"
+                                            "example": "Project id must be integer"
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "ListProjectSettingsResponse": {
+                "description": "Project settings that belong to a certain project",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "success"
+                                },
+                                "data": {
+                                    "$ref": "#\/components\/schemas\/ProjectSettings"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "SendConversationResponse": {
+                "description": "Send a message to a conversation",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "success"
+                                },
+                                "data": {
+                                    "$ref": "#\/components\/schemas\/PromptHistory"
                                 }
                             }
                         }
@@ -2732,6 +3112,283 @@
                                             ],
                                             "type": "string",
                                             "example": "Project with id 1 not found"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "CreateConversationResponse": {
+                "description": "Create a new conversation",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "success"
+                                },
+                                "data": {
+                                    "$ref": "#\/components\/schemas\/Conversation"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "CreateProjectErrorResponse": {
+                "description": "Project creation failed",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "url": {
+                                    "description": "The URL of the request",
+                                    "type": "string",
+                                    "example": "https:\/\/app.customgpt.ai\/api\/v1\/projects\/1"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "The error status code",
+                                            "enum": [
+                                                400,
+                                                401,
+                                                403,
+                                                404,
+                                                500,
+                                                503
+                                            ],
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "message": {
+                                            "description": "The error message",
+                                            "enum": [
+                                                "Project name can't be empty",
+                                                "Sitemap path can't be empty",
+                                                "You have reached your monthly project limit"
+                                            ],
+                                            "type": "string",
+                                            "example": "Project name can't be empty"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "ProjectCreatedResponse": {
+                "description": "Project has been created",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "success"
+                                },
+                                "data": {
+                                    "$ref": "#\/components\/schemas\/Project"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "ListProjectResponse": {
+                "description": "Retrieve certain project that belongs to the user",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "success"
+                                },
+                                "data": {
+                                    "$ref": "#\/components\/schemas\/Project"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "ListProjectPluginResponse": {
+                "description": "Project plugin that belong to a certain project",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "success"
+                                },
+                                "data": {
+                                    "$ref": "#\/components\/schemas\/ProjectPlugin"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "UpdateProjectResponse": {
+                "description": "Project has been updated",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "success"
+                                },
+                                "data": {
+                                    "$ref": "#\/components\/schemas\/Project"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "UpdateProjectSettingsResponse": {
+                "description": "Project settings have been updated",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "success"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "properties": {
+                                        "updated": {
+                                            "description": "Whether the project was updated successfully or not",
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "UpdateProjectPluginResponse": {
+                "description": "Project plugin have been updated",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "success"
+                                },
+                                "data": {
+                                    "$ref": "#\/components\/schemas\/ProjectPlugin"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "InternalServerErrorResponse": {
+                "description": "Internal Server Error",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "description": "The status of the response",
+                                    "enum": [
+                                        "error",
+                                        "success"
+                                    ],
+                                    "type": "string",
+                                    "example": "error"
+                                },
+                                "url": {
+                                    "description": "The URL of the request",
+                                    "type": "string",
+                                    "example": "https:\/\/app.customgpt.ai\/api\/v1\/projects\/1"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "The error status code",
+                                            "enum": [
+                                                400,
+                                                401,
+                                                403,
+                                                404,
+                                                500,
+                                                503
+                                            ],
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal Server Error"
                                         }
                                     }
                                 }
@@ -2835,8 +3492,8 @@
                     }
                 }
             },
-            "CreateConversationResponse": {
-                "description": "Create a new conversation",
+            "CreateProjectPluginResponse": {
+                "description": "Project plugin have been created",
                 "content": {
                     "application\/json": {
                         "schema": {
@@ -2852,143 +3509,15 @@
                                     "example": "success"
                                 },
                                 "data": {
-                                    "$ref": "#\/components\/schemas\/Conversation"
+                                    "$ref": "#\/components\/schemas\/ProjectPlugin"
                                 }
                             }
                         }
                     }
                 }
             },
-            "CreateProjectSourceResponse": {
-                "description": "Successfully created a new project source.",
-                "content": {
-                    "application\/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "description": "The status of the response",
-                                    "enum": [
-                                        "error",
-                                        "success"
-                                    ],
-                                    "type": "string",
-                                    "example": "success"
-                                },
-                                "data": {
-                                    "$ref": "#\/components\/schemas\/ProjectSource"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "ApiTokenValidationErrorResponse": {
-                "description": "API Token is either missing or invalid",
-                "content": {
-                    "application\/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "description": "The status of the response",
-                                    "enum": [
-                                        "error",
-                                        "success"
-                                    ],
-                                    "type": "string",
-                                    "example": "error"
-                                },
-                                "url": {
-                                    "description": "The URL of the request",
-                                    "type": "string",
-                                    "example": "https:\/\/app.customgpt.ai\/api\/v1\/projects\/1"
-                                },
-                                "data": {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "description": "The error status code",
-                                            "enum": [
-                                                400,
-                                                401,
-                                                403,
-                                                404,
-                                                500,
-                                                503
-                                            ],
-                                            "type": "integer",
-                                            "example": 401
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "API Token is either missing or invalid"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "ProjectStatsResponse": {
-                "description": "Project stats",
-                "content": {
-                    "application\/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "description": "The status of the response",
-                                    "enum": [
-                                        "error",
-                                        "success"
-                                    ],
-                                    "type": "string",
-                                    "example": "success"
-                                },
-                                "data": {
-                                    "type": "object",
-                                    "properties": {
-                                        "pages_found": {
-                                            "description": "Number of pages found for the project",
-                                            "type": "integer",
-                                            "example": 100
-                                        },
-                                        "pages_crawled": {
-                                            "description": "Number of pages crawled for the project",
-                                            "type": "integer",
-                                            "example": 100
-                                        },
-                                        "pages_indexed": {
-                                            "description": "Number of pages indexed for the project",
-                                            "type": "integer",
-                                            "example": 100
-                                        },
-                                        "crawl_credits_used": {
-                                            "description": "Number of crawl credits used for the project",
-                                            "type": "integer",
-                                            "example": 100
-                                        },
-                                        "query_credits_used": {
-                                            "description": "Number of query credits used for the project",
-                                            "type": "integer",
-                                            "example": 100
-                                        },
-                                        "index_credits_used": {
-                                            "description": "Number of index credits used for the project",
-                                            "type": "integer",
-                                            "example": 100
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "CreateProjectErrorResponse": {
-                "description": "Project creation failed",
+            "UpdateProjectSettingsErrorResponse": {
+                "description": "Update project settings failed",
                 "content": {
                     "application\/json": {
                         "schema": {
@@ -3027,12 +3556,12 @@
                                         "message": {
                                             "description": "The error message",
                                             "enum": [
-                                                "Project name can't be empty",
-                                                "Sitemap path can't be empty",
-                                                "You have reached your monthly project limit"
+                                                "Please upload a valid image file for avatar",
+                                                "Please upload a valid image file for background",
+                                                "Language Proficiency is required."
                                             ],
                                             "type": "string",
-                                            "example": "Project name can't be empty"
+                                            "example": "Please upload a valid image file for avatar"
                                         }
                                     }
                                 }
@@ -3086,259 +3615,6 @@
                                             ],
                                             "type": "string",
                                             "example": "Page with id 1 not found"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "CreateProjectPluginResponse": {
-                "description": "Project plugin have been created",
-                "content": {
-                    "application\/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "description": "The status of the response",
-                                    "enum": [
-                                        "error",
-                                        "success"
-                                    ],
-                                    "type": "string",
-                                    "example": "success"
-                                },
-                                "data": {
-                                    "$ref": "#\/components\/schemas\/ProjectPlugin"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "ListProjectPluginResponse": {
-                "description": "Project plugin that belong to a certain project",
-                "content": {
-                    "application\/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "description": "The status of the response",
-                                    "enum": [
-                                        "error",
-                                        "success"
-                                    ],
-                                    "type": "string",
-                                    "example": "success"
-                                },
-                                "data": {
-                                    "$ref": "#\/components\/schemas\/ProjectPlugin"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "InternalServerErrorResponse": {
-                "description": "Internal Server Error",
-                "content": {
-                    "application\/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "description": "The status of the response",
-                                    "enum": [
-                                        "error",
-                                        "success"
-                                    ],
-                                    "type": "string",
-                                    "example": "error"
-                                },
-                                "url": {
-                                    "description": "The URL of the request",
-                                    "type": "string",
-                                    "example": "https:\/\/app.customgpt.ai\/api\/v1\/projects\/1"
-                                },
-                                "data": {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "description": "The error status code",
-                                            "enum": [
-                                                400,
-                                                401,
-                                                403,
-                                                404,
-                                                500,
-                                                503
-                                            ],
-                                            "type": "integer",
-                                            "example": 500
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Internal Server Error"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "UpdateProjectPluginResponse": {
-                "description": "Project plugin have been updated",
-                "content": {
-                    "application\/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "description": "The status of the response",
-                                    "enum": [
-                                        "error",
-                                        "success"
-                                    ],
-                                    "type": "string",
-                                    "example": "success"
-                                },
-                                "data": {
-                                    "$ref": "#\/components\/schemas\/ProjectPlugin"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "UpdateProjectSettingsResponse": {
-                "description": "Project settings have been updated",
-                "content": {
-                    "application\/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "description": "The status of the response",
-                                    "enum": [
-                                        "error",
-                                        "success"
-                                    ],
-                                    "type": "string",
-                                    "example": "success"
-                                },
-                                "data": {
-                                    "type": "object",
-                                    "properties": {
-                                        "updated": {
-                                            "description": "Whether the project was updated successfully or not",
-                                            "type": "boolean",
-                                            "example": true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "ListProjectResponse": {
-                "description": "Retrieve certain project that belongs to the user",
-                "content": {
-                    "application\/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "description": "The status of the response",
-                                    "enum": [
-                                        "error",
-                                        "success"
-                                    ],
-                                    "type": "string",
-                                    "example": "success"
-                                },
-                                "data": {
-                                    "$ref": "#\/components\/schemas\/Project"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "ProjectCreatedResponse": {
-                "description": "Project has been created",
-                "content": {
-                    "application\/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "description": "The status of the response",
-                                    "enum": [
-                                        "error",
-                                        "success"
-                                    ],
-                                    "type": "string",
-                                    "example": "success"
-                                },
-                                "data": {
-                                    "$ref": "#\/components\/schemas\/Project"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "FlaskServiceErrorResponse": {
-                "description": "Service unavailable",
-                "content": {
-                    "application\/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "description": "The status of the response",
-                                    "enum": [
-                                        "error",
-                                        "success"
-                                    ],
-                                    "type": "string",
-                                    "example": "error"
-                                },
-                                "url": {
-                                    "description": "The URL of the request",
-                                    "type": "string",
-                                    "example": "https:\/\/app.customgpt.ai\/api\/v1\/projects\/1"
-                                },
-                                "data": {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "description": "The error status code",
-                                            "enum": [
-                                                400,
-                                                401,
-                                                403,
-                                                404,
-                                                500,
-                                                503
-                                            ],
-                                            "type": "integer",
-                                            "example": 400
-                                        },
-                                        "message": {
-                                            "description": "The error message",
-                                            "enum": [
-                                                "Sitemap URL is empty",
-                                                "Our system could not validate your sitemap",
-                                                "Our system could not detect any pages in your sitemap"
-                                            ],
-                                            "type": "string",
-                                            "example": "Sitemap URL is empty"
                                         }
                                     }
                                 }
