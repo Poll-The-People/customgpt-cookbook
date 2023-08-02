@@ -1,6 +1,26 @@
 # CustomGPT Personas
 Examples and recipes for using the CustomGPT Persona feature. This feature lets you create custom instructions for your ChatGPT-4 powered CustomGPT chatbot built with your own content. 
 
+## TABLE OF CONTENTS
+  - [Background](#background)
+  - [PERSONA RECIPES](#persona-recipes)
+    - [Website Customer Engagement](#website-customer-engagement)
+    - [Customer Service / Helpdesk](#customer-service--helpdesk)
+    - [Knowledge Researcher](#knowledge-researcher-1)
+    - [Friendly Assistant](#knowledge-researcher-2)
+    - [AI Tutor for Geography](#ai-tutor-for-geography)
+  - [EXAMPLE RECIPES](#example-recipes)
+    - [Redirection To A Sales Funnel](#redirection-to-a-sales-funnel)
+    - [Collect Email Before All Else](#collect-email-before-all-else)
+    - [Referring to Relevant Content From Your Knowledgebase](#referring-to-relevant-content-from-your-knowledgebase)
+    - [Specific Source for Certain Topics](#specific-source-for-certain-topics)
+    - [Block Or Respond In A Specific Way If The User Asks About A Certain Topic](#block-or-respond-in-a-specific-way-if-the-user-asks-about-a-certain-topic)
+    - [User Frustration Handoff](#user-frustration-handoff)
+    - [Prompt The Customer To Visit A Site After 3 Questions](#prompt-the-customer-to-visit-a-site-after-3-questions)
+    - [Schedule A Meeting](#schedule-a-meeting)
+  - [PERSONA CREATOR TOOL](#persona-creator-tool)
+  - [HAVE QUESTIONS?](#have-questions)
+
 ## Background
 The [CustomGPT Persona](https://customgpt.ai/chatgpt-personas/) feature lets you set custom instructions for your CustomGPT chatbot. This gives you the control to have the chatbot behave exactly as you want it to. You can read more at: https://customgpt.ai/chatgpt-personas/ 
 
