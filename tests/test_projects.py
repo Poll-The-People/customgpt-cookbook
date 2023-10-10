@@ -49,11 +49,11 @@ def test_projects():
 
     url = api_endpoint + 'projects' + f"/{project_id}"
     update_project = requests.request('POST', url, headers=headers, data=payload)
+    assert update_project.status_code == 200
     project_updated_data = json.loads(update_project.text)["data"]
     project_name_updated = project_updated_data["project_name"]
     assert project_name_created != project_name_updated
     assert project_name_updated == project_name
-    assert update_project.status_code == 200
 
     # Get Project By created project Id and assert updated name
     response = requests.request('GET', url, headers=headers)

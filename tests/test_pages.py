@@ -23,7 +23,7 @@ def test_pages():
 
     response_create = requests.request('POST', url, headers=headers, data=payload)
     project_data = json.loads(response_create.text)["data"]
-    project_id = project_data['id']
+    project_id = project_data["id"]
     name = 'Test Converasation'
     payload = json.dumps({
         "name": name
@@ -51,8 +51,17 @@ def test_pages():
     pages = data['pages']['data']
     assert len(pages) > 0
   	
-    # Check for updated settings
-    url = api_endpoint + 'projects' + f"/{project_id}" + '/pages/' + str(pages[0]['id'])
 
+    # Preview
+    url = api_endpoint + 'preview/' + str(pages[0]['id'])
+    page_preview = requests.request('GET', url, headers=headers)
+    assert page_preview.status_code == 200
+
+    # Reindex
+    url = api_endpoint + 'projects' + f"/{project_id}" + '/pages/' + str(pages[0]['id']) + '/reindex'
+    project_page= requests.request('POST', url, headers=headers)
+    assert project_page.status_code == 200
+
+    url = api_endpoint + 'projects' + f"/{project_id}" + '/pages/' + str(pages[0]['id'])
     project_page= requests.request('DELETE', url, headers=headers)
     assert project_page.status_code == 200

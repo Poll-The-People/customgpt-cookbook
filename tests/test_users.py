@@ -12,14 +12,6 @@ headers = {
 }
 
 def test_users():
-    project_name = 'Example ChatBot using Sitemap'
-    sitemap_path = 'https://adorosario.github.io/small-sitemap.xml'
-
-    payload = json.dumps({
-        "project_name": project_name,
-        "sitemap_path": sitemap_path
-    })
-
     url = api_endpoint + 'user'
 
     user_response = requests.request('GET', url, headers=headers)
