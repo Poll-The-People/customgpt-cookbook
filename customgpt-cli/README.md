@@ -53,11 +53,11 @@ Create a project:
 # Using environment variable
 export CUSTOMGPT_API_KEY=your_api_key
 
-# With a sitemap
-customgpt-cli create-project --name "My Project" --sitemap https://example.com/sitemap.xml
+# With a sitemap, return project ID
+customgpt-cli create-project --name "My Test Project With Sitemap" --sitemap "https://adorosario.github.io/small-sitemap.xml" --format id-only
 
-# With a file
-customgpt-cli create-project --name "My Project" --file /path/to/file.pdf
+# With a file, returning JSON output. 
+customgpt-cli create-project --name "My Test Project With File" --file /path/to/file.pdf --format json
 ```
 
 List projects with filtering:
@@ -80,9 +80,14 @@ customgpt-cli list-projects --format table
 customgpt-cli list-projects --format id-only
 ```
 
+Show a project details: 
+```bash
+customgpt-cli show-project --project-id PROJECT_ID --format json
+```
+
 Update a project:
 ```bash
-customgpt-cli update-project --project-id PROJECT_ID --name "New Name" --is-shared 1
+customgpt-cli update-project --project-id PROJECT_ID --name "New Name" --is-shared 1 --format json
 ```
 
 Delete projects:
