@@ -154,18 +154,150 @@ class CustomGPTCLI:
         delete_projects.add_argument('--force', action='store_true', help='Skip confirmation prompt')
         
     def _add_conversation_commands(self, subparsers):
-        # Create conversation
-        create_conv = subparsers.add_parser('create-conversation', help='Create a new conversation')
-        create_conv.add_argument('--project-id', required=True, help='Project ID')
-        create_conv.add_argument('--name', required=True, help='Conversation name')
-        
-        # Send message
-        send_msg = subparsers.add_parser('send-message', help='Send a message')
-        send_msg.add_argument('--project-id', required=True, help='Project ID')
-        send_msg.add_argument('--session-id', required=True, help='Session ID')
-        send_msg.add_argument('--prompt', required=True, help='Message prompt')
-        send_msg.add_argument('--stream', action='store_true', help='Enable streaming')
-        send_msg.add_argument('--persona', help='Custom persona')
+            """Add all conversation-related command parsers."""
+            
+            # Create conversation
+            create_conv = subparsers.add_parser('create-conversation', 
+                                            help='Create a new conversation')
+            create_conv.add_argument('--project-id', 
+                                required=True, 
+                                type=int,
+                                help='Project ID')
+            create_conv.add_argument('--name', 
+                                required=True, 
+                                help='Conversation name')
+            create_conv.add_argument('--format', 
+                                choices=['table', 'json', 'id-only'],
+                                default='table',
+                                help='Output format (default: table)')
+            
+            # Update conversation
+            update_conv = subparsers.add_parser('update-conversation',
+                                            help='Update an existing conversation')
+            update_conv.add_argument('--project-id',
+                                required=True,
+                                type=int,
+                                help='Project ID')
+            update_conv.add_argument('--session-id',
+                                required=True,
+                                help='Session ID')
+            update_conv.add_argument('--name',
+                                required=True,
+                                help='New conversation name')
+            update_conv.add_argument('--format',
+                                choices=['table', 'json', 'id-only'],
+                                default='table',
+                                help='Output format (default: table)')
+            
+            # Delete conversation
+            delete_conv = subparsers.add_parser('delete-conversation',
+                                            help='Delete a conversation')
+            delete_conv.add_argument('--project-id',
+                                required=True,
+                                type=int,
+                                help='Project ID')
+            delete_conv.add_argument('--session-id',
+                                required=True,
+                                help='Session ID')
+            delete_conv.add_argument('--force',
+                                action='store_true',
+                                help='Skip confirmation prompt')
+            
+            # Send message
+            send_msg = subparsers.add_parser('send-message',
+                                            help='Send a message to a conversation')
+            send_msg.add_argument('--project-id',
+                                required=True,
+                                type=int,
+                                help='Project ID')
+            send_msg.add_argument('--session-id',
+                                required=True,
+                                help='Session ID')
+            send_msg.add_argument('--prompt',
+                                required=True,
+                                help='Message prompt')
+            send_msg.add_argument('--stream',
+                                action='store_true',
+                                help='Enable streaming responses')
+            send_msg.add_argument('--persona',
+                                help='Custom persona instructions')
+            send_msg.add_argument('--model',
+                                choices=['gpt-4-o', 'gpt-4-turbo', 'gpt-4', 'gpt-4o-mini', 
+                                    'claude-3-sonnet', 'claude-3.5-sonnet'],
+                                help='Chatbot model to use')
+            send_msg.add_argument('--response-source',
+                                choices=['default', 'own_content', 'openai_content'],
+                                default='default',
+                                help='Response source configuration')
+            send_msg.add_argument('--format',
+                                choices=['table', 'json', 'id-only'],
+                                default='table',
+                                help='Output format (default: table)')
+            
+            # Get messages
+            get_msgs = subparsers.add_parser('get-messages',
+                                            help='Retrieve messages from a conversation')
+            get_msgs.add_argument('--project-id',
+                                required=True,
+                                type=int,
+                                help='Project ID')
+            get_msgs.add_argument('--session-id',
+                                required=True,
+                                help='Session ID')
+            get_msgs.add_argument('--page',
+                                type=int,
+                                default=1,
+                                help='Page number (default: 1)')
+            get_msgs.add_argument('--order',
+                                choices=['asc', 'desc'],
+                                default='desc',
+                                help='Sort order (default: desc)')
+            get_msgs.add_argument('--format',
+                                choices=['table', 'json', 'id-only'],
+                                default='table',
+                                help='Output format (default: table)')
+            
+            # Get specific message
+            get_msg = subparsers.add_parser('get-message',
+                                        help='Retrieve a specific message')
+            get_msg.add_argument('--project-id',
+                            required=True,
+                            type=int,
+                            help='Project ID')
+            get_msg.add_argument('--session-id',
+                            required=True,
+                            help='Session ID')
+            get_msg.add_argument('--prompt-id',
+                            required=True,
+                            type=int,
+                            help='Message/Prompt ID')
+            get_msg.add_argument('--format',
+                            choices=['table', 'json', 'id-only'],
+                            default='table',
+                            help='Output format (default: table)')
+            
+            # Update message feedback
+            update_feedback = subparsers.add_parser('update-message-feedback',
+                                                help='Update feedback for a message')
+            update_feedback.add_argument('--project-id',
+                                    required=True,
+                                    type=int,
+                                    help='Project ID')
+            update_feedback.add_argument('--session-id',
+                                    required=True,
+                                    help='Session ID')
+            update_feedback.add_argument('--prompt-id',
+                                    required=True,
+                                    type=int,
+                                    help='Message/Prompt ID')
+            update_feedback.add_argument('--reaction',
+                                    required=True,
+                                    choices=['neutral', 'disliked', 'liked'],
+                                    help='Feedback reaction')
+            update_feedback.add_argument('--format',
+                                    choices=['table', 'json', 'id-only'],
+                                    default='table',
+                                    help='Output format (default: table)')
 
     def _add_page_commands(self, subparsers):
         # Get pages
@@ -1009,8 +1141,70 @@ class CustomGPTCLI:
                 project_id=args.project_id,
                 name=args.name
             )
-            print(result)
             
+            if not result:
+                print("Error: Failed to create conversation")
+                sys.exit(1)
+                
+            try:
+                response_data = json.loads(result.content)
+                if args.format == 'json':
+                    print(json.dumps(response_data, indent=2))
+                else:
+                    print(f"Successfully created conversation with ID: {response_data['data']['id']}")
+            except Exception as e:
+                print(f"Error parsing response: {str(e)}")
+                sys.exit(1)
+                
+        elif args.command == 'update-conversation':
+            result = self._make_api_call(
+                CustomGPT.Conversation.update,
+                project_id=args.project_id,
+                session_id=args.session_id,
+                name=args.name
+            )
+            
+            if not result:
+                print("Error: Failed to update conversation")
+                sys.exit(1)
+                
+            try:
+                response_data = json.loads(result.content)
+                if args.format == 'json':
+                    print(json.dumps(response_data, indent=2))
+                else:
+                    print(f"Successfully updated conversation {args.session_id}")
+            except Exception as e:
+                print(f"Error parsing response: {str(e)}")
+                sys.exit(1)
+                
+        elif args.command == 'delete-conversation':
+            if not args.force:
+                confirm = input(f"Are you sure you want to delete conversation {args.session_id}? (yes/no): ")
+                if confirm.lower() != 'yes':
+                    print("Operation cancelled")
+                    return
+                    
+            result = self._make_api_call(
+                CustomGPT.Conversation.delete,
+                project_id=args.project_id,
+                session_id=args.session_id
+            )
+            
+            if not result:
+                print("Error: Failed to delete conversation")
+                sys.exit(1)
+                
+            try:
+                response_data = json.loads(result.content)
+                if response_data.get('data', {}).get('deleted'):
+                    print(f"Successfully deleted conversation {args.session_id}")
+                else:
+                    print("Failed to delete conversation")
+            except Exception as e:
+                print(f"Error parsing response: {str(e)}")
+                sys.exit(1)
+                
         elif args.command == 'send-message':
             api_args = {
                 'project_id': args.project_id,
@@ -1018,15 +1212,152 @@ class CustomGPTCLI:
                 'prompt': args.prompt,
                 'stream': args.stream
             }
-            if args.persona:
+            
+            # Add optional parameters if provided
+            if hasattr(args, 'persona') and args.persona:
                 api_args['custom_persona'] = args.persona
+            if hasattr(args, 'model') and args.model:
+                api_args['chatbot_model'] = args.model
+            if hasattr(args, 'response_source') and args.response_source:
+                api_args['response_source'] = args.response_source
+
+            try:
+                if args.stream:
+                    # Handle streaming response
+                    result = CustomGPT.Conversation.send(**api_args)
+                    if result and hasattr(result, 'events'):
+                        try:
+                            if args.format == 'json':
+                                # JSON format: print full event data
+                                for event in result.events():
+                                    if hasattr(event, 'data'):
+                                        print(event.data)
+                            else:
+                                # Typing effect: only print progress messages
+                                import sys
+                                import time
+
+                                for event in result.events():
+                                    if hasattr(event, 'data'):
+                                        try:
+                                            event_data = json.loads(event.data)
+                                            if event_data.get('status') == 'progress' and 'message' in event_data:
+                                                sys.stdout.write(event_data['message'])
+                                                sys.stdout.flush()
+                                                # Small delay for typing effect (50ms)
+                                                time.sleep(0.05)
+                                        except json.JSONDecodeError:
+                                            continue
+                                # Add newline at the end
+                                print()
+                        except Exception as e:
+                            print(f"Error in stream processing: {str(e)}", file=sys.stderr)
+                            sys.exit(1)
+                    else:
+                        print("Error: No streaming response received", file=sys.stderr)
+                        sys.exit(1)
+                else:
+                    # Handle non-streaming response
+                    result = self._make_api_call(CustomGPT.Conversation.send, **api_args)
+                    if result:
+                        try:
+                            response_data = json.loads(result.content)
+                            if args.format == 'json':
+                                print(json.dumps(response_data, indent=2))
+                            else:
+                                print(response_data.get('data', {}).get('openai_response', 'No response received'))
+                        except Exception as e:
+                            print(f"Error parsing response: {str(e)}", file=sys.stderr)
+                            sys.exit(1)
+                    else:
+                        print("Error: Failed to send message", file=sys.stderr)
+                        sys.exit(1)
+            except Exception as e:
+                print(f"Error sending message: {str(e)}", file=sys.stderr)
+                sys.exit(1)
+
+        elif args.command == 'get-messages':
+            result = self._make_api_call(
+                CustomGPT.Conversation.messages,
+                project_id=args.project_id,
+                session_id=args.session_id,
+                page=args.page if hasattr(args, 'page') else 1,
+                order=args.order if hasattr(args, 'order') else 'desc'
+            )
+            
+            if not result:
+                print("Error: Failed to retrieve messages")
+                sys.exit(1)
                 
-            result = self._make_api_call(CustomGPT.Conversation.send, **api_args)
-            if args.stream and result:
-                for event in result.events():
-                    print(event.data)
-            else:
-                print(result)
+            try:
+                response_data = json.loads(result.content)
+                if args.format == 'json':
+                    print(json.dumps(response_data, indent=2))
+                else:
+                    messages = response_data.get('data', {}).get('messages', {}).get('data', [])
+                    if not messages:
+                        print("No messages found")
+                    else:
+                        for msg in messages:
+                            print(f"Message ID: {msg.get('id')}")
+                            print(f"Query: {msg.get('user_query')}")
+                            print(f"Response: {msg.get('openai_response')}")
+                            print("-" * 50)
+            except Exception as e:
+                print(f"Error parsing response: {str(e)}")
+                sys.exit(1)
+                
+        elif args.command == 'get-message':
+            result = self._make_api_call(
+                CustomGPT.Message.get,
+                project_id=args.project_id,
+                session_id=args.session_id,
+                prompt_id=args.prompt_id
+            )
+            
+            if not result:
+                print("Error: Failed to retrieve message")
+                sys.exit(1)
+                
+            try:
+                response_data = json.loads(result.content)
+                if args.format == 'json':
+                    print(json.dumps(response_data, indent=2))
+                else:
+                    msg = response_data.get('data', {})
+                    print(f"Message ID: {msg.get('id')}")
+                    print(f"Query: {msg.get('user_query')}")
+                    print(f"Response: {msg.get('openai_response')}")
+                    if msg.get('citations'):
+                        print("\nCitations:", msg.get('citations'))
+                    if msg.get('response_feedback'):
+                        print("\nFeedback:", msg.get('response_feedback'))
+            except Exception as e:
+                print(f"Error parsing response: {str(e)}")
+                sys.exit(1)
+                
+        elif args.command == 'update-message-feedback':
+            result = self._make_api_call(
+                CustomGPT.Message.feedback,
+                project_id=args.project_id,
+                session_id=args.session_id,
+                prompt_id=args.prompt_id,
+                reaction=args.reaction
+            )
+            
+            if not result:
+                print("Error: Failed to update message feedback")
+                sys.exit(1)
+                
+            try:
+                response_data = json.loads(result.content)
+                if args.format == 'json':
+                    print(json.dumps(response_data, indent=2))
+                else:
+                    print(f"Successfully updated feedback for message {args.prompt_id}")
+            except Exception as e:
+                print(f"Error parsing response: {str(e)}")
+                sys.exit(1)
 
     def _handle_page_commands(self, args):
         """Handle all page-related commands."""
@@ -1072,7 +1403,7 @@ class CustomGPTCLI:
         # Handle commands by category
         if args.command in ['create-project', 'show-project', 'list-projects', 'update-project', 'delete-projects']:
             self._handle_project_commands(args)
-        elif args.command in ['create-conversation', 'send-message']:
+        elif args.command in ['create-conversation', 'update-conversation', 'delete-conversation', 'send-message', 'get-messages', 'get-message', 'update-message-feedback' ]:
             self._handle_conversation_commands(args)
         elif args.command in ['get-pages', 'delete-page', 'reindex-page']:
             self._handle_page_commands(args)

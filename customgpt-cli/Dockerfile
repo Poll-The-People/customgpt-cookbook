@@ -3,7 +3,12 @@ FROM python:3.9-slim
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Install system dependencies including jq for JSON processing
+RUN apt-get update && apt-get install -y \
+    jq \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
