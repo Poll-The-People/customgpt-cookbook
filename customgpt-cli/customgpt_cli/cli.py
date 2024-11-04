@@ -146,7 +146,31 @@ class CustomGPTCLI:
                               choices=['table', 'json', 'id-only'],
                               default='table',
                               help='Output format (default: table)')
+
+        # Add replicate project command
+        replicate_project = subparsers.add_parser('replicate-project', 
+                                                help='Replicate an existing project')
+        replicate_project.add_argument('--project-id', 
+                                    required=True,
+                                    type=int,
+                                    help='Project ID to replicate')
+        replicate_project.add_argument('--format', 
+                                    choices=['table', 'json', 'id-only'],
+                                    default='table',
+                                    help='Output format (default: table)')
         
+        # Add get project stats command
+        project_stats = subparsers.add_parser('project-stats',
+                                        help='Get statistics for a project')
+        project_stats.add_argument('--project-id',
+                                required=True,
+                                type=int,
+                                help='Project ID')
+        project_stats.add_argument('--format',
+                                choices=['table', 'json', 'id-only'],
+                                default='table',
+                                help='Output format (default: table)')
+       
         # Delete projects
         delete_projects = subparsers.add_parser('delete-projects', help='Delete multiple projects')
         delete_projects.add_argument('--project-ids', required=True, help='Comma-separated list of project IDs')
@@ -1081,7 +1105,65 @@ class CustomGPTCLI:
                 
         elif args.command == 'update-project':
             self._handle_update_project(args)
+
+        elif args.command == 'replicate-project':
+            result = self._make_api_call(
+                CustomGPT.Project.replicate,
+                project_id=args.project_id
+            )
+            
+            if not result:
+                print("Error: Failed to replicate project")
+                sys.exit(1)
                 
+            try:
+                response_data = json.loads(result.content)
+                if args.format == 'json':
+                    print(json.dumps(response_data, indent=2))
+                elif args.format == 'id-only':
+                    print(response_data.get('data', {}).get('id', 'N/A'))
+                else:  # table format
+                    project_data = response_data.get('data', {})
+                    print(f"Successfully replicated project:")
+                    print(f"  ID: {project_data.get('id', 'N/A')}")
+                    print(f"  Name: {project_data.get('project_name', 'N/A')}")
+                    print(f"  Type: {project_data.get('type', 'N/A')}")
+                    print(f"  Created at: {project_data.get('created_at', 'N/A')}")
+            except Exception as e:
+                print(f"Error parsing response: {str(e)}")
+                sys.exit(1)
+                
+        elif args.command == 'project-stats':
+            result = self._make_api_call(
+                CustomGPT.Project.stats,
+                project_id=args.project_id
+            )
+            
+            if not result:
+                print("Error: Failed to get project stats")
+                sys.exit(1)
+                
+            try:
+                response_data = json.loads(result.content)
+                if args.format == 'json':
+                    print(json.dumps(response_data, indent=2))
+                elif args.format == 'id-only':
+                    print(args.project_id)
+                else:  # table format
+                    stats_data = response_data.get('data', {})
+                    print(f"Project Statistics:")
+                    print(f"  Pages Found: {stats_data.get('pages_found', 'N/A')}")
+                    print(f"  Pages Crawled: {stats_data.get('pages_crawled', 'N/A')}")
+                    print(f"  Pages Indexed: {stats_data.get('pages_indexed', 'N/A')}")
+                    print(f"  Total Words Indexed: {stats_data.get('total_words_indexed', 'N/A')}")
+                    print(f"  Storage Credits Used: {stats_data.get('total_storage_credits_used', 'N/A')}")
+                    print(f"  Crawl Credits Used: {stats_data.get('crawl_credits_used', 'N/A')}")
+                    print(f"  Query Credits Used: {stats_data.get('query_credits_used', 'N/A')}")
+                    print(f"  Total Queries: {stats_data.get('total_queries', 'N/A')}")
+            except Exception as e:
+                print(f"Error parsing response: {str(e)}")
+                sys.exit(1)
+
         elif args.command == 'delete-projects':
             # Get projects to delete
             projects_to_delete = []
@@ -1401,7 +1483,7 @@ class CustomGPTCLI:
         CustomGPT.api_key = api_key
         
         # Handle commands by category
-        if args.command in ['create-project', 'show-project', 'list-projects', 'update-project', 'delete-projects']:
+        if args.command in ['create-project', 'show-project', 'list-projects', 'update-project', 'delete-projects', 'replicate-project', 'project-stats']:
             self._handle_project_commands(args)
         elif args.command in ['create-conversation', 'update-conversation', 'delete-conversation', 'send-message', 'get-messages', 'get-message', 'update-message-feedback' ]:
             self._handle_conversation_commands(args)
