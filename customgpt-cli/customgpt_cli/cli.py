@@ -12,6 +12,7 @@ import logging
 import os
 import time
 import json
+import ast
 
 from typing import Optional, List, Dict, Any, Union
 from pathlib import Path
@@ -90,6 +91,24 @@ class CustomGPTCLI:
         
         # Page commands
         self._add_page_commands(subparsers)
+
+        self._add_citations_commands(subparsers)
+
+        self._add_sources_commands(subparsers)
+
+        self._add_reports_commands(subparsers)
+
+        self._add_user_commands(subparsers)
+
+        self._add_project_settings_commands(subparsers)
+
+        self._add_plugins_commands(subparsers)
+
+        self._add_limits_commands(subparsers)
+
+        self._add_page_metadata_commands(subparsers)
+
+        self._add_preview_commands(subparsers)
         
         return parser
     
@@ -176,6 +195,7 @@ class CustomGPTCLI:
         delete_projects.add_argument('--project-ids', required=True, help='Comma-separated list of project IDs')
         delete_projects.add_argument('--dry-run', action='store_true', help='Show what would be deleted without actually deleting')
         delete_projects.add_argument('--force', action='store_true', help='Skip confirmation prompt')
+        
         
     def _add_conversation_commands(self, subparsers):
             """Add all conversation-related command parsers."""
@@ -327,6 +347,9 @@ class CustomGPTCLI:
         # Get pages
         get_pages = subparsers.add_parser('get-pages', help='Get project pages')
         get_pages.add_argument('--project-id', required=True, help='Project ID')
+        get_pages.add_argument('--page', type=int, default=1, help='Page number to return')
+        get_pages.add_argument('--duration', type=int, help='The duration of the projects to list. Defaults to 90 days.')
+        get_pages.add_argument('--order', choices=['asc', 'desc'], default='desc', help='The order of the projects to list. Defaults to desc.')
         
         # Delete page
         delete_page = subparsers.add_parser('delete-page', help='Delete a page')
@@ -337,6 +360,190 @@ class CustomGPTCLI:
         reindex_page = subparsers.add_parser('reindex-page', help='Reindex a page')
         reindex_page.add_argument('--project-id', required=True, help='Project ID')
         reindex_page.add_argument('--page-id', required=True, help='Page ID')
+
+    def _add_citations_commands(self, subparsers):
+        """Add all citations-related command parsers."""
+        # Get citations
+        get_citations = subparsers.add_parser('get-citation', help='Get citation details')
+        get_citations.add_argument('--project-id', required=True, help='Project ID')
+        get_citations.add_argument('--citation-id', required=True, help='Citation ID')
+
+    def _add_sources_commands(self, subparsers):
+        """Add all sources-related command parsers."""
+        # List sources
+        list_sources = subparsers.add_parser(
+            'list-sources', 
+            help='Retrieve a list of all sources associated with a specific project',
+            description='List all data sources linked to a given project. These sources serve as references or contexts for the project.'
+        )
+        list_sources.add_argument('--project-id', required=True, help='The unique identifier of the project whose sources you want to list')
+
+        # Create source
+        create_source = subparsers.add_parser(
+            'create-source', 
+            help='Create a new data source for a project',
+            description='Add a new source to a project by specifying a sitemap URL or uploading a file. This enriches the project\'s information by incorporating additional data sources.'
+        )
+        create_source.add_argument('--project-id', required=True, help='The unique identifier of the project to add the source to')
+        create_source.add_argument('--sitemap-path', help='URL of the sitemap to be added as a source (e.g., https://example.com/sitemap.xml)')
+        create_source.add_argument('--file-data-retension', action='store_true', help='Retain file data for future reference')
+        create_source.add_argument('--is-ocr-enabled', action='store_true', help='Enable Optical Character Recognition (OCR) for documents')
+        create_source.add_argument('--is-anonymized', action='store_true', help='Anonymize the source data')
+        create_source.add_argument('--file', help='Path to the file to be uploaded as a source')
+
+        # Update source
+        update_source = subparsers.add_parser(
+            'update-source', 
+            help='Update settings for an existing project source',
+            description='Modify configuration of a specific data source, including JavaScript execution, refresh frequency, and page management settings.'
+        )
+        update_source.add_argument('--project-id', required=True, help='The unique identifier of the project')
+        update_source.add_argument('--source-id', required=True, help='The unique identifier of the source to update')
+        update_source.add_argument('--executive-js', action='store_true', help='Enable JavaScript execution for the source')
+        update_source.add_argument('--data-refresh-frequency', 
+            choices=['never', 'daily', 'weekly', 'monthly', 'advanced'], 
+            default='never', 
+            help='Frequency of data source refresh (default: never)'
+        )
+        update_source.add_argument('--create-new-pages', action='store_true', help='Automatically add new pages during source refresh')
+        update_source.add_argument('--remove-unexist-pages', action='store_true', help='Automatically remove non-existent pages during source refresh')
+        update_source.add_argument('--refresh-existing-pages', 
+            choices=['never', 'always', 'if_updated'], 
+            default='never', 
+            help='Policy for refreshing existing pages (default: never)'
+        )
+        update_source.add_argument('--refresh-schedule', help='Custom refresh schedule for advanced frequency (JSON format)')
+
+        # Delete source
+        delete_source = subparsers.add_parser(
+            'delete-source', 
+            help='Delete a specific source from a project',
+            description='Permanently remove a data source from the specified project.'
+        )
+        delete_source.add_argument('--project-id', required=True, help='The unique identifier of the project')
+        delete_source.add_argument('--source-id', required=True, help='The unique identifier of the source to delete')
+
+        # Sync source
+        sync_source = subparsers.add_parser(
+            'sync-source', 
+            help='Perform an instant sync of the specified source',
+            description='Immediately synchronize a specific source, updating its content in real-time.'
+        )
+        sync_source.add_argument('--project-id', required=True, help='The unique identifier of the project')
+        sync_source.add_argument('--source-id', required=True, help='The unique identifier of the source to sync')
+
+    def _add_reports_commands(self, subparsers):
+        """Add all reports-related command parsers."""
+        # Get traffic report
+        get_traffic_report = subparsers.add_parser('get-traffic-report', help='Get traffic report')
+        get_traffic_report.add_argument('--project-id', required=True, help='Project ID')
+        get_traffic_report.add_argument('--filters', help='Filters')
+
+        # Get queries report
+        get_queries_report = subparsers.add_parser('get-queries-report', help='Get queries report')
+        get_queries_report.add_argument('--project-id', required=True, help='Project ID')
+        get_queries_report.add_argument('--filters', help='Filters')
+
+        # Get conversations report
+        get_conversations_report = subparsers.add_parser('get-conversations-report', help='Get conversations report')
+        get_conversations_report.add_argument('--project-id', required=True, help='Project ID')
+        get_conversations_report.add_argument('--filters', help='Filters')
+
+        # Get analysis report
+        get_analysis_report = subparsers.add_parser('get-analysis-report', help='Get analysis report')
+        get_analysis_report.add_argument('--project-id', required=True, help='Project ID')
+        get_analysis_report.add_argument('--filters', help='Filters')
+        get_analysis_report.add_argument('--interval', choices=['daily', 'weekly'], default='weekly', help='Interval')
+
+    def _add_user_commands(self, subparsers):
+        """Add all user-related command parsers."""
+        # Get user
+        get_user = subparsers.add_parser('get-user', help='Get user')
+
+    def _add_project_settings_commands(self, subparsers):
+        """Add all project settings-related command parsers."""
+        # Get project settings
+        get_project_settings = subparsers.add_parser('get-project-settings', help='Get project settings')
+        get_project_settings.add_argument('--project-id', required=True, help='Project ID')
+
+        # Update project settings
+        update_project_settings = subparsers.add_parser('update-project-settings', help='Update project settings')
+        update_project_settings.add_argument('--project-id', required=True, help='Project ID')
+        update_project_settings.add_argument('--chatbot-avatar', help='Chatbot avatar')
+        update_project_settings.add_argument('--chatbot-background', help='Chatbot background')
+        update_project_settings.add_argument('--default-prompt', help='Default prompt')
+        update_project_settings.add_argument('--example-questions', help='Example questions')
+        update_project_settings.add_argument('--response-source', help='Response source')
+        update_project_settings.add_argument('--chatbot-msg-lang', help='Chatbot msg lang')
+        update_project_settings.add_argument('--chatbot-color', help='Chatbot color')
+        update_project_settings.add_argument('--chatbot-toolbar-color', help='Chatbot toolbar color')
+        update_project_settings.add_argument('--persona-instructions', help='Persona instructions')
+        update_project_settings.add_argument('--citations-answer-source-label-msg', help='Citations answer source label msg')
+        update_project_settings.add_argument('--citations-sources-label-msg', help='Citations sources label msg')
+        update_project_settings.add_argument('--hang-in-there-msg', help='Hang in there msg')
+        update_project_settings.add_argument('--chatbot-siesta-msg', help='Chatbot siesta msg')
+        update_project_settings.add_argument('--is-loading-indicator-enabled', action='store_true', help='Is loading indicator enabled')
+        update_project_settings.add_argument('--enable-citations', help='Enable citations')
+        update_project_settings.add_argument('--enable-feedbacks', action='store_true', help='Enable feedbacks')
+        update_project_settings.add_argument('--citations-view-type', choices=['user', 'show', 'hide'], default='user', help='Citations view type')
+        update_project_settings.add_argument('--no-answer-message', help='No answer message')
+        update_project_settings.add_argument('--ending-message', help='Ending message')
+        update_project_settings.add_argument('--remove-branding', action='store_true', help='Remove branding')
+        update_project_settings.add_argument('--enable-recaptcha-for-public-chatbots', action='store_true', help='Enable recaptcha for public chatbots')
+        update_project_settings.add_argument('--chatbot-model', choices=['gpt-4-o', 'gpt-4-turbo', 'gpt-4', 'gpt-4o-mini', 'claude-3-sonnet', 'claude-3.5-sonnet'], default='gpt-4-o', help='Chatbot model')
+        update_project_settings.add_argument('--is-selling-enabled', action='store_true', help='Is selling enabled')
+        update_project_settings.add_argument('--license-slug', help='License slug')
+        update_project_settings.add_argument('--selling-url', help='Selling URL')
+    
+    def _add_plugins_commands(self, subparsers):
+        """Add all plugins-related command parsers."""
+        # List plugins
+        list_plugins = subparsers.add_parser('list-plugins', help='List plugins')
+        list_plugins.add_argument('--project-id', required=True, help='Project ID')
+        # Create plugin
+        create_plugin = subparsers.add_parser('create-plugin', help='Create plugin')
+        create_plugin.add_argument('--project-id', required=True, help='Project ID')
+        create_plugin.add_argument('--model-name', required=True, help='Model name')
+        create_plugin.add_argument('--human-name', required=True, help='Human name')
+        create_plugin.add_argument('--keywords', required=True, help='Keywords')
+        create_plugin.add_argument('--description', required=True, help='Description')
+        create_plugin.add_argument('--is-active', action='store_true', help='Is active')
+
+        # Update plugin
+        update_plugin = subparsers.add_parser('update-plugin', help='Update plugin')
+        update_plugin.add_argument('--project-id', required=True, help='Project ID')
+        update_plugin.add_argument('--model-name', required=True, help='Model name')
+        update_plugin.add_argument('--human-name', required=True, help='Human name')
+        update_plugin.add_argument('--keywords', required=True, help='Keywords')
+        update_plugin.add_argument('--description', required=True, help='Description')
+        update_plugin.add_argument('--is-active', action='store_true', help='Is active')        
+
+    def _add_limits_commands(self, subparsers):
+        """Add all limits-related command parsers."""
+        # Get limits
+        get_limits = subparsers.add_parser('get-limits', help='Get limits')
+
+    def _add_page_metadata_commands(self, subparsers):
+        """Add all page metadata-related command parsers."""
+        # Get page metadata
+        get_page_metadata = subparsers.add_parser('get-page-metadata', help='Get page metadata')
+        get_page_metadata.add_argument('--project-id', required=True, help='Project ID')
+        get_page_metadata.add_argument('--page-id', required=True, help='Page ID')
+
+        # Update page metadata
+        update_page_metadata = subparsers.add_parser('update-page-metadata', help='Update page metadata')
+        update_page_metadata.add_argument('--project-id', required=True, help='Project ID')
+        update_page_metadata.add_argument('--page-id', required=True, help='Page ID')
+        update_page_metadata.add_argument('--title', help='Title')
+        update_page_metadata.add_argument('--url', help='Url')
+        update_page_metadata.add_argument('--description', help='Description')
+        update_page_metadata.add_argument('--image', help='Image')
+
+    def _add_preview_commands(self, subparsers):
+        """Add all preview-related command parsers."""
+        # Preview file
+        preview_file = subparsers.add_parser('preview-file', help='Preview file')
+        preview_file.add_argument('--id', required=True, help='Page Id')
 
     def _handle_rate_limit(self, response, retry_count, max_retries):
         """
@@ -1446,9 +1653,11 @@ class CustomGPTCLI:
         if args.command == 'get-pages':
             result = self._make_api_call(
                 CustomGPT.Page.get,
-                project_id=args.project_id
+                project_id=args.project_id,
+                page=args.page,
+                duration=args.duration,
+                order=args.order
             )
-            print(result)
             
         elif args.command == 'delete-page':
             result = self._make_api_call(
@@ -1456,7 +1665,6 @@ class CustomGPTCLI:
                 project_id=args.project_id,
                 page_id=args.page_id
             )
-            print(result)
             
         elif args.command == 'reindex-page':
             result = self._make_api_call(
@@ -1464,8 +1672,349 @@ class CustomGPTCLI:
                 project_id=args.project_id,
                 page_id=args.page_id
             )
+        
+        try:
+            response_data = json.loads(result.content)
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON response from API")
+            sys.exit(1)
+
+        response_data = json.loads(result.content)
+        print(json.dumps(response_data, indent=2))            
+
+    def _handle_citations_commands(self, args):
+        """Handle all citations-related commands."""
+        if args.command == 'get-citation':
+            result = self._make_api_call(
+                CustomGPT.Citation.get,
+                project_id=args.project_id,
+                citation_id=args.citation_id
+        )
+        
+        try:
+            response_data = json.loads(result.content)
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON response from API")
+            sys.exit(1)
+
+        response_data = json.loads(result.content)
+        print(json.dumps(response_data, indent=2))
+    
+    def _handle_sources_commands(self, args):
+        """Handle all sources-related commands based on OpenAPI/openapi.json."""
+        print("Handling sources commands")
+        print(args.command)
+        if args.command == 'list-sources':
+            result = self._make_api_call(
+                CustomGPT.Source.list,
+                project_id=args.project_id
+            )
+
+        elif args.command == 'create-source':
+            print("Creating source")
+            if args.file:
+                result = self._make_api_call(
+                    CustomGPT.Source.create,
+                    project_id=args.project_id,
+                    file_data_retension=args.file_data_retension,
+                    is_ocr_enabled=args.is_ocr_enabled,
+                    is_anonymized=args.is_anonymized,
+                    file = File(payload=arg.file, file_name=str(arg.file.name))
+                )
+            else:
+                result = self._make_api_call(
+                    CustomGPT.Source.create,
+                    project_id=args.project_id,
+                    sitemap_path=args.sitemap_path,
+                    file_data_retension=args.file_data_retension,
+                    is_ocr_enabled=args.is_ocr_enabled,
+                    is_anonymized=args.is_anonymized
+                )
             print(result)
-                                            
+
+        elif args.command == 'update-source':
+            result = self._make_api_call(
+                CustomGPT.Source.update,
+                project_id=args.project_id,
+                source_id=args.source_id,
+                executive_js=args.executive_js,
+                data_refresh_frequency=args.data_refresh_frequency,
+                create_new_pages=args.create_new_pages,
+                remove_unexist_pages=args.remove_unexist_pages,
+                refresh_existing_pages=args.refresh_existing_pages
+            )
+
+        elif args.command == 'delete-source':
+            result = self._make_api_call(
+                CustomGPT.Source.delete,
+                project_id=args.project_id,
+                source_id=args.source_id
+            )
+
+        elif args.command == 'sync-source':
+            result = self._make_api_call(
+                CustomGPT.Source.synchronize,
+                project_id=args.project_id,
+                source_id=args.source_id
+            )
+        
+        try:
+            response_data = json.loads(result.content)
+            print(response_data)
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON response from API")
+            sys.exit(1)
+        
+        print(json.dumps(response_data, indent=2))
+
+    def _handle_reports_commands(self, args):
+        """Handle all reports-related commands based on OpenAPI/openapi.json."""
+        if args.command == 'get-traffic-report':
+            result = self._make_api_call(
+                CustomGPT.ReportsAnalytics.traffic,
+                project_id=args.project_id,
+                filters=args.filters
+            )
+
+        elif args.command == 'get-queries-report':
+            result = self._make_api_call(
+                CustomGPT.ReportsAnalytics.queries,
+                project_id=args.project_id,
+                filters=args.filters
+            )
+
+        elif args.command == 'get-conversations-report':
+            result = self._make_api_call(
+                CustomGPT.ReportsAnalytics.conversations,
+                project_id=args.project_id,
+                filters=args.filters
+            )
+        
+        elif args.command == 'get-analysis-report':
+            result = self._make_api_call(
+                CustomGPT.ReportsAnalytics.analysis,
+                project_id=args.project_id,
+                filters=args.filters,
+                interval=args.interval
+            )
+        
+        try:
+            response_data = json.loads(result.content)
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON response from API")
+            sys.exit(1)
+            
+        if 'data' not in response_data:
+            print("Error: Unexpected API response format - missing data field")
+            sys.exit(1)
+        
+        response_data = json.loads(result.content)
+        print(json.dumps(response_data, indent=2))
+    
+    def _handle_user_commands(self, args):
+        """Handle all user-related commands based on OpenAPI/openapi.json."""
+        if args.command == 'get-user':
+            result = self._make_api_call(
+                CustomGPT.User.get
+            )
+        
+        try:
+            response_data = json.loads(result.content)
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON response from API")
+            sys.exit(1)
+            
+        if 'data' not in response_data:
+            print("Error: Unexpected API response format - missing data field")
+            sys.exit(1)
+        
+        response_data = json.loads(result.content)
+        print(json.dumps(response_data, indent=2))
+    
+    def _handle_project_settings_commands(self, args):
+        """Handle all project settings-related commands based on OpenAPI/openapi.json."""
+        if args.command == 'get-project-settings':
+            result = self._make_api_call(
+                CustomGPT.ProjectSettings.get,
+                project_id=args.project_id
+            )
+
+        elif args.command == 'update-project-settings':
+            kwargs = {
+                'project_id': args.project_id,
+            }
+            if args.chatbot_avatar:
+                kwargs['chat_bot_avatar'] = File(payload=open(args.chatbot_avatar, 'rb'), file_name=args.chatbot_avatar.split('/')[-1])
+            if args.chatbot_background:
+                kwargs['chat_bot_bg'] = File(payload=open(args.chatbot_background, 'rb'), file_name=args.chatbot_background.split('/')[-1])
+            if args.default_prompt:
+                kwargs['default_prompt'] = args.default_prompt
+            if args.example_questions:
+                print(args.example_questions)
+                questions = ast.literal_eval(args.example_questions)
+                print(type(questions))
+                print(questions)
+                kwargs['example_questions'] = questions
+            if args.response_source:
+                kwargs['response_source'] = args.response_source
+            if args.chatbot_msg_lang:
+                kwargs['chatbot_msg_lang'] = args.chatbot_msg_lang
+            if args.chatbot_color:
+                kwargs['chatbot_color'] = args.chatbot_color
+            if args.chatbot_toolbar_color:
+                kwargs['chatbot_toolbar_color'] = args.chatbot_toolbar_color
+            if args.persona_instructions:
+                kwargs['persona_instructions'] = args.persona_instructions
+            if args.citations_answer_source_label_msg:
+                kwargs['citations_answer_source_label_msg'] = args.citations_answer_source_label_msg
+            if args.citations_sources_label_msg:
+                kwargs['citations_sources_label_msg'] = args.citations_sources_label_msg
+            if args.hang_in_there_msg:
+                kwargs['hang_in_there_msg'] = args.hang_in_there_msg
+            if args.chatbot_siesta_msg:
+                kwargs['chatbot_siesta_msg'] = args.chatbot_siesta_msg
+            if args.is_loading_indicator_enabled:
+                kwargs['is_loading_indicator_enabled'] = args.is_loading_indicator_enabled
+            if args.enable_citations:
+                kwargs['enable_citations'] = args.enable_citations
+            if args.enable_feedbacks:
+                kwargs['enable_feedbacks'] = args.enable_feedbacks
+            if args.citations_view_type:
+                kwargs['citations_view_type'] = args.citations_view_type
+            if args.no_answer_message:
+                kwargs['no_answer_message'] = args.no_answer_message
+            if args.ending_message:
+                kwargs['ending_message'] = args.ending_message
+            if args.remove_branding:
+                kwargs['remove_branding'] = args.remove_branding
+            if args.enable_recaptcha_for_public_chatbots:
+                kwargs['enable_recaptcha_for_public_chatbots'] = args.enable_recaptcha_for_public_chatbots
+            if args.chatbot_model:
+                kwargs['chatbot_model'] = args.chatbot_model
+            if args.is_selling_enabled:
+                kwargs['is_selling_enabled'] = args.is_selling_enabled
+            result = self._make_api_call(
+                CustomGPT.ProjectSettings.update,
+                **kwargs
+            )
+        try:
+            response_data = json.loads(result.content)
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON response from API")
+            sys.exit(1)
+            
+        response_data = json.loads(result.content)
+        print(json.dumps(response_data, indent=2))
+
+    def _handle_plugins_commands(self, args):
+        """Handle all plugins-related commands based on OpenAPI/openapi.json."""
+        if args.command == 'list-plugins':
+            result = self._make_api_call(
+                CustomGPT.ProjectPlugins.get,
+                project_id=args.project_id
+            )
+
+        elif args.command == 'create-plugin':
+            result = self._make_api_call(
+                CustomGPT.ProjectPlugins.create,
+                project_id=args.project_id,
+                model_name=args.model_name,
+                human_name=args.human_name,
+                keywords=args.keywords,
+                description=args.description,
+                is_active=args.is_active
+            )
+
+        elif args.command == 'update-plugin':
+            result = self._make_api_call(
+                CustomGPT.ProjectPlugins.update,
+                project_id=args.project_id,
+                model_name=args.model_name,
+                human_name=args.human_name,
+                keywords=args.keywords,
+                description=args.description,
+                is_active=args.is_active
+            )
+        try:
+            response_data = json.loads(result.content)
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON response from API")
+            sys.exit(1)
+        
+        response_data = json.loads(result.content)
+        print(json.dumps(response_data, indent=2))
+
+    def _handle_limits_commands(self, args):
+        """Handle all limits-related commands based on OpenAPI/openapi.json."""
+        if args.command == 'get-limits':
+            result = self._make_api_call(
+                CustomGPT.Limit.get
+            )
+        try:
+            response_data = json.loads(result.content)
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON response from API")
+            sys.exit(1)
+            
+        if 'data' not in response_data:
+            print("Error: Unexpected API response format - missing data field")
+            sys.exit(1)
+        
+        response_data = json.loads(result.content)
+        print(json.dumps(response_data, indent=2))
+    
+    def _handle_page_metadata_commands(self, args):
+        """Handle all page metadata-related commands based on OpenAPI/openapi.json."""
+        if args.command == 'get-page-metadata':
+            result = self._make_api_call(
+                CustomGPT.PageMetadata.get,
+                project_id=args.project_id,
+                page_id=args.page_id
+            )
+
+        elif args.command == 'update-page-metadata':
+            result = self._make_api_call(
+                CustomGPT.PageMetadata.update,
+                project_id=args.project_id,
+                page_id=args.page_id,
+                title=args.title,
+                url=args.url,
+                description=args.description,
+                image=args.image
+            )
+        
+        try:
+            response_data = json.loads(result.content)
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON response from API")
+            sys.exit(1)
+            
+        # if 'data' not in response_data:
+        #     print("Error: Unexpected API response format - missing data field")
+        #     sys.exit(1)
+        
+        print(json.dumps(response_data, indent=2))
+    
+    def _handle_preview_commands(self, args):
+        """Handle all preview-related commands based on OpenAPI/openapi.json."""
+        if args.command == 'preview-file':
+            result = self._make_api_call(
+                CustomGPT.Page.preview,
+                id=args.id
+            )
+            
+        try:
+            response_data = json.loads(result.content)
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON response from API")
+            sys.exit(1)
+            
+        if 'data' not in response_data:
+            print("Error: Unexpected API response format - missing data field")
+            sys.exit(1)
+        response_data = json.loads(result.content)
+        print(response_data)
+
     def run(self):
         args = self.parser.parse_args()
         
@@ -1489,6 +2038,24 @@ class CustomGPTCLI:
             self._handle_conversation_commands(args)
         elif args.command in ['get-pages', 'delete-page', 'reindex-page']:
             self._handle_page_commands(args)
+        elif args.command in ['get-citation']:
+            self._handle_citations_commands(args)
+        elif args.command in ['list-sources', 'create-source', 'update-source', 'delete-source', 'sync-source']:
+            self._handle_sources_commands(args)
+        elif args.command in ['get-traffic-report', 'get-queries-report', 'get-conversations-report', 'get-analysis-report']:
+            self._handle_reports_commands(args)
+        elif args.command in ['get-user']:
+            self._handle_user_commands(args)
+        elif args.command in ['get-project-settings', 'update-project-settings']:
+            self._handle_project_settings_commands(args)
+        elif args.command in ['list-plugins', 'create-plugin', 'update-plugin', 'delete-plugin']:
+            self._handle_plugins_commands(args)
+        elif args.command in ['preview-file']:
+            self._handle_preview_commands(args)
+        elif args.command in ['get-page-metadata', 'update-page-metadata']:
+            self._handle_page_metadata_commands(args)
+        elif args.command in ['get-limits']:
+            self._handle_limits_commands(args)
 
 def main():
     cli = CustomGPTCLI()

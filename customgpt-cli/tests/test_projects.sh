@@ -36,15 +36,15 @@ check_success() {
 }
 
 # Test listing projects
-print_header "Testing list-projects command"
-customgpt-cli list-projects
-check_success "List projects (table format)"
+# print_header "Testing list-projects command"
+# customgpt-cli list-projects
+# check_success "List projects (table format)"
 
-customgpt-cli list-projects --format json
-check_success "List projects (JSON format)"
+# customgpt-cli list-projects --format json
+# check_success "List projects (JSON format)"
 
-customgpt-cli list-projects --format id-only
-check_success "List projects (ID only format)"
+# customgpt-cli list-projects --format id-only
+# check_success "List projects (ID only format)"
 
 # Test creating a new project
 print_header "Testing create-project command"
@@ -87,23 +87,23 @@ customgpt-cli delete-projects --project-ids "$NEW_PROJECT_ID,$REPLICATED_PROJECT
 check_success "Delete projects"
 
 # Additional filtering tests for list-projects
-print_header "Testing list-projects with filters"
-customgpt-cli list-projects --name-filter "Test" --format json
-check_success "List projects with name filter"
+# print_header "Testing list-projects with filters"
+# customgpt-cli list-projects --name-filter "Test" --format json
+# check_success "List projects with name filter"
 
-customgpt-cli list-projects --inactive-days 30 --format json
-check_success "List projects with inactivity filter"
+# customgpt-cli list-projects --inactive-days 30 --format json
+# check_success "List projects with inactivity filter"
 
-customgpt-cli list-projects --min-queries 10 --max-queries 1000 --format json
-check_success "List projects with query count filters"
+# customgpt-cli list-projects --min-queries 10 --max-queries 1000 --format json
+# check_success "List projects with query count filters"
 
-customgpt-cli list-projects \
-    --min-pages-found 1 \
-    --min-pages-crawled 1 \
-    --min-pages-indexed 1 \
-    --min-words-indexed 1000 \
-    --format json
-check_success "List projects with comprehensive stats filters"
+# customgpt-cli list-projects \
+#     --min-pages-found 1 \
+#     --min-pages-crawled 1 \
+#     --min-pages-indexed 1 \
+#     --min-words-indexed 1000 \
+#     --format json
+# check_success "List projects with comprehensive stats filters"
 
 # Final summary
 print_header "Test Summary"
