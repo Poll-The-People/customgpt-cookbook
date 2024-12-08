@@ -1,5 +1,5 @@
 # First, set your environment variables
-export PROJECT_ID=51001
+export PROJECT_ID=52093
 
 # 1. Create a new conversation
 customgpt-cli create-conversation --project-id $PROJECT_ID --name "Test Conversation" --format json

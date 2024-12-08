@@ -1,5 +1,10 @@
 # test user cli commands
 
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+BLUE='\033[0;34m'
+
 # Helper function for printing
 print_header() {
     echo -e "\n${BLUE}=== $1 ===${NC}\n"

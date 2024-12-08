@@ -195,7 +195,20 @@ class CustomGPTCLI:
         delete_projects.add_argument('--project-ids', required=True, help='Comma-separated list of project IDs')
         delete_projects.add_argument('--dry-run', action='store_true', help='Show what would be deleted without actually deleting')
         delete_projects.add_argument('--force', action='store_true', help='Skip confirmation prompt')
+    
+    def _handle_default_format(self, response):
+        try:
+            response_data = json.loads(response.content)
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON response from API")
+            sys.exit(1)
         
+        json_string = json.dumps(response_data, indent=2)
+        if response.status_code not in [200, 201, 202, 204]:
+            print(json_string)
+            sys.exit(1)
+        
+        print(json_string)
         
     def _add_conversation_commands(self, subparsers):
             """Add all conversation-related command parsers."""
@@ -599,7 +612,8 @@ class CustomGPTCLI:
                     continue
                 
                 return response
-
+            except AttributeError as e:
+                return None
             except Exception as e:
                 logger.error(f"Exception in API call to {api_func.__name__}: {str(e)}", exc_info=True)
                 return None
@@ -1673,14 +1687,7 @@ class CustomGPTCLI:
                 page_id=args.page_id
             )
         
-        try:
-            response_data = json.loads(result.content)
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON response from API")
-            sys.exit(1)
-
-        response_data = json.loads(result.content)
-        print(json.dumps(response_data, indent=2))            
+        self._handle_default_format(result)
 
     def _handle_citations_commands(self, args):
         """Handle all citations-related commands."""
@@ -1691,329 +1698,301 @@ class CustomGPTCLI:
                 citation_id=args.citation_id
         )
         
-        try:
-            response_data = json.loads(result.content)
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON response from API")
-            sys.exit(1)
-
-        response_data = json.loads(result.content)
-        print(json.dumps(response_data, indent=2))
+        self._handle_default_format(result)
     
     def _handle_sources_commands(self, args):
         """Handle all sources-related commands based on OpenAPI/openapi.json."""
-        print("Handling sources commands")
-        print(args.command)
-        if args.command == 'list-sources':
-            result = self._make_api_call(
-                CustomGPT.Source.list,
-                project_id=args.project_id
-            )
-
-        elif args.command == 'create-source':
-            print("Creating source")
-            if args.file:
-                result = self._make_api_call(
-                    CustomGPT.Source.create,
-                    project_id=args.project_id,
-                    file_data_retension=args.file_data_retension,
-                    is_ocr_enabled=args.is_ocr_enabled,
-                    is_anonymized=args.is_anonymized,
-                    file = File(payload=arg.file, file_name=str(arg.file.name))
-                )
-            else:
-                result = self._make_api_call(
-                    CustomGPT.Source.create,
-                    project_id=args.project_id,
-                    sitemap_path=args.sitemap_path,
-                    file_data_retension=args.file_data_retension,
-                    is_ocr_enabled=args.is_ocr_enabled,
-                    is_anonymized=args.is_anonymized
-                )
-            print(result)
-
-        elif args.command == 'update-source':
-            result = self._make_api_call(
-                CustomGPT.Source.update,
-                project_id=args.project_id,
-                source_id=args.source_id,
-                executive_js=args.executive_js,
-                data_refresh_frequency=args.data_refresh_frequency,
-                create_new_pages=args.create_new_pages,
-                remove_unexist_pages=args.remove_unexist_pages,
-                refresh_existing_pages=args.refresh_existing_pages
-            )
-
-        elif args.command == 'delete-source':
-            result = self._make_api_call(
-                CustomGPT.Source.delete,
-                project_id=args.project_id,
-                source_id=args.source_id
-            )
-
-        elif args.command == 'sync-source':
-            result = self._make_api_call(
-                CustomGPT.Source.synchronize,
-                project_id=args.project_id,
-                source_id=args.source_id
-            )
-        
         try:
-            response_data = json.loads(result.content)
-            print(response_data)
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON response from API")
+            if args.command == 'list-sources':
+                result = self._make_api_call(
+                    CustomGPT.Source.list,
+                    project_id=args.project_id
+                )
+
+            elif args.command == 'create-source':
+                if args.file:
+                    if not os.path.exists(args.file):
+                        print(f"Error: File {args.file} does not exist")
+                        sys.exit(1)
+                    try:
+                        with open(args.file, 'rb') as f:
+                            file_content = f.read()
+                        result = self._make_api_call(
+                            CustomGPT.Source.create,
+                            project_id=args.project_id,
+                            file_data_retension=args.file_data_retension,
+                            is_ocr_enabled=args.is_ocr_enabled,
+                            is_anonymized=args.is_anonymized,
+                            file=File(payload=file_content, file_name=os.path.basename(args.file))
+                        )
+                    except IOError as e:
+                        print(f"Error reading file: {e}")
+                        sys.exit(1)
+                else:
+                    if not args.sitemap_path:
+                        print("Error: Either file or sitemap_path must be provided")
+                        sys.exit(1)
+                    result = self._make_api_call(
+                        CustomGPT.Source.create,
+                        project_id=args.project_id,
+                        sitemap_path=args.sitemap_path,
+                        file_data_retension=args.file_data_retension,
+                        is_ocr_enabled=args.is_ocr_enabled,
+                        is_anonymized=args.is_anonymized
+                    )
+
+            elif args.command == 'update-source':
+                result = self._make_api_call(
+                    CustomGPT.Source.update,
+                    project_id=args.project_id,
+                    source_id=args.source_id,
+                    executive_js=args.executive_js,
+                    data_refresh_frequency=args.data_refresh_frequency,
+                    create_new_pages=args.create_new_pages,
+                    remove_unexist_pages=args.remove_unexist_pages,
+                    refresh_existing_pages=args.refresh_existing_pages
+                )
+
+            elif args.command == 'delete-source':
+                result = self._make_api_call(
+                    CustomGPT.Source.delete,
+                    project_id=args.project_id,
+                    source_id=args.source_id
+                )
+
+            elif args.command == 'sync-source':
+                result = self._make_api_call(
+                    CustomGPT.Source.synchronize,
+                    project_id=args.project_id,
+                    source_id=args.source_id
+                )
+            self._handle_default_format(result)
+        except Exception as e:
+            print(f"Failed to perform source {args.command}")
             sys.exit(1)
-        
-        print(json.dumps(response_data, indent=2))
 
     def _handle_reports_commands(self, args):
         """Handle all reports-related commands based on OpenAPI/openapi.json."""
-        if args.command == 'get-traffic-report':
-            result = self._make_api_call(
-                CustomGPT.ReportsAnalytics.traffic,
-                project_id=args.project_id,
-                filters=args.filters
-            )
-
-        elif args.command == 'get-queries-report':
-            result = self._make_api_call(
-                CustomGPT.ReportsAnalytics.queries,
-                project_id=args.project_id,
-                filters=args.filters
-            )
-
-        elif args.command == 'get-conversations-report':
-            result = self._make_api_call(
-                CustomGPT.ReportsAnalytics.conversations,
-                project_id=args.project_id,
-                filters=args.filters
-            )
-        
-        elif args.command == 'get-analysis-report':
-            result = self._make_api_call(
-                CustomGPT.ReportsAnalytics.analysis,
-                project_id=args.project_id,
-                filters=args.filters,
-                interval=args.interval
-            )
-        
         try:
-            response_data = json.loads(result.content)
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON response from API")
-            sys.exit(1)
+            if args.command == 'get-traffic-report':
+                result = self._make_api_call(
+                    CustomGPT.ReportsAnalytics.traffic,
+                    project_id=args.project_id,
+                    filters=args.filters
+                )
+
+            elif args.command == 'get-queries-report':
+                result = self._make_api_call(
+                    CustomGPT.ReportsAnalytics.queries,
+                    project_id=args.project_id,
+                    filters=args.filters
+                )
+
+            elif args.command == 'get-conversations-report':
+                result = self._make_api_call(
+                    CustomGPT.ReportsAnalytics.conversations,
+                    project_id=args.project_id,
+                    filters=args.filters
+                )
             
-        if 'data' not in response_data:
-            print("Error: Unexpected API response format - missing data field")
+            elif args.command == 'get-analysis-report':
+                result = self._make_api_call(
+                    CustomGPT.ReportsAnalytics.analysis,
+                    project_id=args.project_id,
+                    filters=args.filters,
+                    interval=args.interval
+                )
+            
+            self._handle_default_format(result)
+        except Exception as e:
+            print(f"Failed to perform report {args.command}")
             sys.exit(1)
-        
-        response_data = json.loads(result.content)
-        print(json.dumps(response_data, indent=2))
     
     def _handle_user_commands(self, args):
         """Handle all user-related commands based on OpenAPI/openapi.json."""
-        if args.command == 'get-user':
-            result = self._make_api_call(
-                CustomGPT.User.get
-            )
-        
         try:
-            response_data = json.loads(result.content)
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON response from API")
-            sys.exit(1)
+            if args.command == 'get-user':
+                result = self._make_api_call(
+                    CustomGPT.User.get
+                )
             
-        if 'data' not in response_data:
-            print("Error: Unexpected API response format - missing data field")
+            self._handle_default_format(result)
+        except Exception as e:
+            print(f"Failed to perform user {args.command}")
             sys.exit(1)
-        
-        response_data = json.loads(result.content)
-        print(json.dumps(response_data, indent=2))
     
     def _handle_project_settings_commands(self, args):
         """Handle all project settings-related commands based on OpenAPI/openapi.json."""
-        if args.command == 'get-project-settings':
-            result = self._make_api_call(
-                CustomGPT.ProjectSettings.get,
-                project_id=args.project_id
-            )
-
-        elif args.command == 'update-project-settings':
-            kwargs = {
-                'project_id': args.project_id,
-            }
-            if args.chatbot_avatar:
-                kwargs['chat_bot_avatar'] = File(payload=open(args.chatbot_avatar, 'rb'), file_name=args.chatbot_avatar.split('/')[-1])
-            if args.chatbot_background:
-                kwargs['chat_bot_bg'] = File(payload=open(args.chatbot_background, 'rb'), file_name=args.chatbot_background.split('/')[-1])
-            if args.default_prompt:
-                kwargs['default_prompt'] = args.default_prompt
-            if args.example_questions:
-                print(args.example_questions)
-                questions = ast.literal_eval(args.example_questions)
-                print(type(questions))
-                print(questions)
-                kwargs['example_questions'] = questions
-            if args.response_source:
-                kwargs['response_source'] = args.response_source
-            if args.chatbot_msg_lang:
-                kwargs['chatbot_msg_lang'] = args.chatbot_msg_lang
-            if args.chatbot_color:
-                kwargs['chatbot_color'] = args.chatbot_color
-            if args.chatbot_toolbar_color:
-                kwargs['chatbot_toolbar_color'] = args.chatbot_toolbar_color
-            if args.persona_instructions:
-                kwargs['persona_instructions'] = args.persona_instructions
-            if args.citations_answer_source_label_msg:
-                kwargs['citations_answer_source_label_msg'] = args.citations_answer_source_label_msg
-            if args.citations_sources_label_msg:
-                kwargs['citations_sources_label_msg'] = args.citations_sources_label_msg
-            if args.hang_in_there_msg:
-                kwargs['hang_in_there_msg'] = args.hang_in_there_msg
-            if args.chatbot_siesta_msg:
-                kwargs['chatbot_siesta_msg'] = args.chatbot_siesta_msg
-            if args.is_loading_indicator_enabled:
-                kwargs['is_loading_indicator_enabled'] = args.is_loading_indicator_enabled
-            if args.enable_citations:
-                kwargs['enable_citations'] = args.enable_citations
-            if args.enable_feedbacks:
-                kwargs['enable_feedbacks'] = args.enable_feedbacks
-            if args.citations_view_type:
-                kwargs['citations_view_type'] = args.citations_view_type
-            if args.no_answer_message:
-                kwargs['no_answer_message'] = args.no_answer_message
-            if args.ending_message:
-                kwargs['ending_message'] = args.ending_message
-            if args.remove_branding:
-                kwargs['remove_branding'] = args.remove_branding
-            if args.enable_recaptcha_for_public_chatbots:
-                kwargs['enable_recaptcha_for_public_chatbots'] = args.enable_recaptcha_for_public_chatbots
-            if args.chatbot_model:
-                kwargs['chatbot_model'] = args.chatbot_model
-            if args.is_selling_enabled:
-                kwargs['is_selling_enabled'] = args.is_selling_enabled
-            result = self._make_api_call(
-                CustomGPT.ProjectSettings.update,
-                **kwargs
-            )
         try:
-            response_data = json.loads(result.content)
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON response from API")
-            sys.exit(1)
-            
-        response_data = json.loads(result.content)
-        print(json.dumps(response_data, indent=2))
+            if args.command == 'get-project-settings':
+                result = self._make_api_call(
+                    CustomGPT.ProjectSettings.get,
+                    project_id=args.project_id
+                )
 
+            elif args.command == 'update-project-settings':
+                kwargs = {
+                    'project_id': args.project_id,
+                }
+                if args.chatbot_avatar:
+                    if not os.path.exists(args.chatbot_avatar):
+                        print(f"Error: Avatar file '{args.chatbot_avatar}' does not exist")
+                        sys.exit(1)
+                    kwargs['chat_bot_avatar'] = File(payload=open(args.chatbot_avatar, 'rb'), file_name=os.path.basename(args.chatbot_avatar))
+                if args.chatbot_background:
+                    if not os.path.exists(args.chatbot_background):
+                        print(f"Error: Background file '{args.chatbot_background}' does not exist")
+                        sys.exit(1)
+                    kwargs['chat_bot_bg'] = File(payload=open(args.chatbot_background, 'rb'), file_name=os.path.basename(args.chatbot_background))
+                if args.default_prompt:
+                    kwargs['default_prompt'] = args.default_prompt
+                if args.example_questions:
+                    try:
+                        questions = ast.literal_eval(args.example_questions)
+                        if not isinstance(questions, list):
+                            print("Error: example_questions must be a list of strings")
+                            sys.exit(1)
+                        if not all(isinstance(q, str) for q in questions):
+                            print("Error: all example questions must be strings")
+                            sys.exit(1)
+                        kwargs['example_questions'] = questions
+                    except (ValueError, SyntaxError) as e:
+                        print(f"Error parsing example_questions: {e}")
+                        sys.exit(1)
+                if args.response_source:
+                    kwargs['response_source'] = args.response_source
+                if args.chatbot_msg_lang:
+                    kwargs['chatbot_msg_lang'] = args.chatbot_msg_lang
+                if args.chatbot_color:
+                    kwargs['chatbot_color'] = args.chatbot_color
+                if args.chatbot_toolbar_color:
+                    kwargs['chatbot_toolbar_color'] = args.chatbot_toolbar_color
+                if args.persona_instructions:
+                    kwargs['persona_instructions'] = args.persona_instructions
+                if args.citations_answer_source_label_msg:
+                    kwargs['citations_answer_source_label_msg'] = args.citations_answer_source_label_msg
+                if args.citations_sources_label_msg:
+                    kwargs['citations_sources_label_msg'] = args.citations_sources_label_msg
+                if args.hang_in_there_msg:
+                    kwargs['hang_in_there_msg'] = args.hang_in_there_msg
+                if args.chatbot_siesta_msg:
+                    kwargs['chatbot_siesta_msg'] = args.chatbot_siesta_msg
+                if args.is_loading_indicator_enabled:
+                    kwargs['is_loading_indicator_enabled'] = args.is_loading_indicator_enabled
+                if args.enable_citations:
+                    kwargs['enable_citations'] = args.enable_citations
+                if args.enable_feedbacks:
+                    kwargs['enable_feedbacks'] = args.enable_feedbacks
+                if args.citations_view_type:
+                    kwargs['citations_view_type'] = args.citations_view_type
+                if args.no_answer_message:
+                    kwargs['no_answer_message'] = args.no_answer_message
+                if args.ending_message:
+                    kwargs['ending_message'] = args.ending_message
+                if args.remove_branding:
+                    kwargs['remove_branding'] = args.remove_branding
+                if args.enable_recaptcha_for_public_chatbots:
+                    kwargs['enable_recaptcha_for_public_chatbots'] = args.enable_recaptcha_for_public_chatbots
+                if args.chatbot_model:
+                    kwargs['chatbot_model'] = args.chatbot_model
+                if args.is_selling_enabled:
+                    kwargs['is_selling_enabled'] = args.is_selling_enabled
+                result = self._make_api_call(
+                    CustomGPT.ProjectSettings.update,
+                    **kwargs
+                )
+            
+            self._handle_default_format(result)
+        except Exception as e:
+            print(f"Failed to perform project settings {args.command}")
+            sys.exit(1)
+    
     def _handle_plugins_commands(self, args):
         """Handle all plugins-related commands based on OpenAPI/openapi.json."""
-        if args.command == 'list-plugins':
-            result = self._make_api_call(
-                CustomGPT.ProjectPlugins.get,
-                project_id=args.project_id
-            )
-
-        elif args.command == 'create-plugin':
-            result = self._make_api_call(
-                CustomGPT.ProjectPlugins.create,
-                project_id=args.project_id,
-                model_name=args.model_name,
-                human_name=args.human_name,
-                keywords=args.keywords,
-                description=args.description,
-                is_active=args.is_active
-            )
-
-        elif args.command == 'update-plugin':
-            result = self._make_api_call(
-                CustomGPT.ProjectPlugins.update,
-                project_id=args.project_id,
-                model_name=args.model_name,
-                human_name=args.human_name,
-                keywords=args.keywords,
-                description=args.description,
-                is_active=args.is_active
-            )
         try:
-            response_data = json.loads(result.content)
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON response from API")
+            if args.command == 'list-plugins':
+                result = self._make_api_call(
+                    CustomGPT.ProjectPlugins.get,
+                    project_id=args.project_id
+                )
+
+            elif args.command == 'create-plugin':
+                result = self._make_api_call(
+                    CustomGPT.ProjectPlugins.create,
+                    project_id=args.project_id,
+                    model_name=args.model_name,
+                    human_name=args.human_name,
+                    keywords=args.keywords,
+                    description=args.description,
+                    is_active=args.is_active
+                )
+
+            elif args.command == 'update-plugin':
+                result = self._make_api_call(
+                    CustomGPT.ProjectPlugins.update,
+                    project_id=args.project_id,
+                    model_name=args.model_name,
+                    human_name=args.human_name,
+                    keywords=args.keywords,
+                    description=args.description,
+                    is_active=args.is_active
+                )
+            self._handle_default_format(result)
+        except Exception as e:
+            print(f"Failed to perform plugin {args.command}")
             sys.exit(1)
-        
-        response_data = json.loads(result.content)
-        print(json.dumps(response_data, indent=2))
 
     def _handle_limits_commands(self, args):
         """Handle all limits-related commands based on OpenAPI/openapi.json."""
-        if args.command == 'get-limits':
-            result = self._make_api_call(
-                CustomGPT.Limit.get
-            )
         try:
-            response_data = json.loads(result.content)
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON response from API")
+            if args.command == 'get-limits':
+                result = self._make_api_call(
+                    CustomGPT.Limit.get
+                )
+            self._handle_default_format(result)
+        except Exception as e:
+            print(f"Failed to perform limits {args.command}")
             sys.exit(1)
-            
-        if 'data' not in response_data:
-            print("Error: Unexpected API response format - missing data field")
-            sys.exit(1)
-        
-        response_data = json.loads(result.content)
-        print(json.dumps(response_data, indent=2))
     
     def _handle_page_metadata_commands(self, args):
         """Handle all page metadata-related commands based on OpenAPI/openapi.json."""
-        if args.command == 'get-page-metadata':
-            result = self._make_api_call(
-                CustomGPT.PageMetadata.get,
-                project_id=args.project_id,
-                page_id=args.page_id
-            )
-
-        elif args.command == 'update-page-metadata':
-            result = self._make_api_call(
-                CustomGPT.PageMetadata.update,
-                project_id=args.project_id,
-                page_id=args.page_id,
-                title=args.title,
-                url=args.url,
-                description=args.description,
-                image=args.image
-            )
-        
         try:
-            response_data = json.loads(result.content)
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON response from API")
-            sys.exit(1)
+            if args.command == 'get-page-metadata':
+                result = self._make_api_call(
+                    CustomGPT.PageMetadata.get,
+                    project_id=args.project_id,
+                    page_id=args.page_id
+                )
+
+            elif args.command == 'update-page-metadata':
+                result = self._make_api_call(
+                    CustomGPT.PageMetadata.update,
+                    project_id=args.project_id,
+                    page_id=args.page_id,
+                    title=args.title,
+                    url=args.url,
+                    description=args.description,
+                    image=args.image
+                )
             
-        # if 'data' not in response_data:
-        #     print("Error: Unexpected API response format - missing data field")
-        #     sys.exit(1)
-        
-        print(json.dumps(response_data, indent=2))
+            self._handle_default_format(result)
+        except Exception as e:
+            print(f"Failed to perform page metadata {args.command}")
+            sys.exit(1)
     
     def _handle_preview_commands(self, args):
         """Handle all preview-related commands based on OpenAPI/openapi.json."""
-        if args.command == 'preview-file':
-            result = self._make_api_call(
-                CustomGPT.Page.preview,
-                id=args.id
-            )
-            
         try:
-            response_data = json.loads(result.content)
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON response from API")
+            if args.command == 'preview-file':
+                result = self._make_api_call(
+                    CustomGPT.Page.preview,
+                    id=args.id
+                )
+                
+            self._handle_default_format(result)
+        except Exception as e:
+            print(f"Failed to perform preview {args.command}")
             sys.exit(1)
-            
-        if 'data' not in response_data:
-            print("Error: Unexpected API response format - missing data field")
-            sys.exit(1)
-        response_data = json.loads(result.content)
-        print(response_data)
 
     def run(self):
         args = self.parser.parse_args()
