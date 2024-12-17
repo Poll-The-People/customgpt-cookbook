@@ -141,6 +141,116 @@ Reindex a page:
 customgpt-cli reindex-page --project-id PROJECT_ID --page-id PAGE_ID
 ```
 
+### Project Settings Management
+
+Get project settings:
+```bash
+customgpt-cli get-project-settings --project-id PROJECT_ID
+```
+
+Update project settings:
+```bash
+customgpt-cli update-project-settings --project-id $PROJECT_ID --default-prompt "Test prompt" --chatbot-avatar "./tests/files/test.png" --chatbot-background "./tests/files/test.png" --example-questions '["Test questions"]' --response-source "default" --chatbot-msg-lang "en" --chatbot-color "#0e57cc" --chatbot-toolbar-color "#0e57cc" --persona-instructions "Test instructions" --citations-answer-source-label-msg "Test label" --citations-sources-label-msg "Test label" --hang-in-there-msg "Test message" --chatbot-siesta-msg "Test message" --is-loading-indicator-enabled --enable-citations 0 --enable-feedbacks --citations-view-type "user" --no-answer-message "Test message" --ending-message "Test message" --remove-branding --enable-recaptcha-for-public-chatbots --chatbot-model "gpt-4-o" --is-selling-enabled --license-slug "test" --selling-url "test"
+```
+
+### Plugin Management
+
+Get plugins:
+```bash
+customgpt-cli get-plugins --project-id PROJECT_ID
+```
+
+Create plugins:
+```bash
+customgpt-cli create-plugin --project-id $PROJECT_ID --model-name "TestPlugin" --human-name "Test Assistant" --keywords "test,automation" --description "This is a helpful automation tool." --is-active
+```
+
+Update plugins:
+```bash
+customgpt-cli update-plugin --project-id $PROJECT_ID --model-name "Updated" --human-name "Updated Assistant" --keywords "updated,assistant" --description "Trusted information about indoor plants and gardening." --is-active
+```
+
+### Page Metadata Management
+
+Get page metadata:
+```bash
+customgpt-cli get-page-metadata --project-id PROJECT_ID --page-id PAGE_ID
+```
+
+Update page metadata:
+```bash
+customgpt-cli update-page-metadata --project-id PROJECT_ID --page-id PAGE_ID --title "Page Title" --url "https://page-url.com" --description "Page description" --image "https://image-url.com/image.png"
+```
+
+### Report Management
+
+Get reports:
+```bash
+# Get traffic report
+customgpt-cli get-traffic-report --project-id PROJECT_ID --filters '["traffic", "pages"]'
+
+# Get queries report
+customgpt-cli get-queries-report --project-id PROJECT_ID --filters '["queries", "pages"]'
+
+# Get conversations report
+customgpt-cli get-conversations-report --project-id PROJECT_ID --filters '["conversations", "pages"]'
+
+# Get analysis report
+customgpt-cli get-analysis-report --project-id PROJECT_ID --filters '["analysis", "pages"]'
+```
+
+### Limits Management
+
+Get limits:
+```bash
+customgpt-cli get-limits
+```
+
+### Citations Management
+
+Get citations:
+```bash
+customgpt-cli get-citations --project-id PROJECT_ID --citation-id CITATION_ID
+```
+
+### Sources Management
+
+Get sources:
+```bash
+customgpt-cli list-sources --project-id PROJECT_ID
+```
+
+Create a source:
+```bash
+# Create source with sitemap
+customgpt-cli create-source --project-id PROJECT_ID --sitemap-path URL --file-data-retension --is-ocr-enabled --is-anonymized
+
+# Create source with file
+customgpt-cli create-source --project-id PROJECT_ID --file PATH --file-data-retension --is-ocr-enabled --is-anonymized
+```
+
+Update source:
+```bash
+customgpt-cli update-source --project-id PROJECT_ID --source-id SOURCE_ID --executive-js --data-refresh-frequency never --create-new-pages --remove-unexist-pages --refresh-existing-pages always --refresh-schedule ["00:00","08:00"]
+```
+
+Delete source:
+```bash
+customgpt-cli delete-source --project-id PROJECT_ID --source-id SOURCE_ID
+```
+
+Sync source:
+```bash
+customgpt-cli sync-source --project-id PROJECT_ID --source-id SOURCE_ID
+```
+
+### User Management
+
+Get user:
+```bash
+customgpt-cli get-user
+```
+
 ## Scripting Examples
 
 Here is an examples of how to use the CLI in scripts:
