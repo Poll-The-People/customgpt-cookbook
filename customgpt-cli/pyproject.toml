@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "customgpt-cli"
+version = "0.1.3"
+description = "No-code AI agent creation platform for enterprise knowledge automation"
+authors = ["CustomGPT Team <support@customgpt.ai>"]
+readme = "README.md"
+packages = [{include = "customgpt_cli"}]
+homepage = "https://customgpt.ai"
+repository = "https://github.com/customgpt/customgpt-cli"
+keywords = ["ai", "agent", "cli", "automation", "enterprise"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+customgpt-client = ">=1.1.6"
+tabulate = ">=0.9.0"
+
+[tool.poetry.scripts]
+customgpt-cli = "customgpt_cli.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.mypy]
+ignore_missing_imports = true

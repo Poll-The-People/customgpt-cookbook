@@ -1,0 +1,9 @@
+version: '3'
+services:
+  cli:
+    build: .
+    volumes:
+      - .:/app
+      - .:/data
+    environment:
+      - CUSTOMGPT_API_KEY=${CUSTOMGPT_API_KEY}
