@@ -1,0 +1,618 @@
+{
+  "name": "Freshdesk Ticket Triage - TEMPLATE",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "freshdesk-classify",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "id": "ccbe2757-022f-49fe-af71-730365427105",
+      "name": "Freshdesk Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -464,
+        96
+      ],
+      "webhookId": "d66b637e-6136-40ae-8c6a-bcb3c89d0549"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ticket-id",
+              "name": "ticket_id",
+              "value": "={{ $json.body?.freshdesk_webhook?.ticket_id ?? $json.body?.ticket_id ?? $json.ticket_id ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "freshdesk-domain",
+              "name": "freshdesk_domain",
+              "value": "YOUR-DOMAIN",
+              "type": "string"
+            },
+            {
+              "id": "agent-id",
+              "name": "customgpt_agent_id",
+              "value": "YOUR-AGENT-ID",
+              "type": "string"
+            },
+            {
+              "id": "allowed-tags",
+              "name": "allowed_tags",
+              "value": "billing_issue, bug_report, account_issue, api_issue, integration_issue, feature_request, newsletter, auto_reply, spam, vendor_outreach, third_party_notification, internal_alert",
+              "type": "string"
+            },
+            {
+              "id": "allowed-types",
+              "name": "allowed_types",
+              "value": "Question, Problem/Bug reporting, Feature Request, Billing, Sales Inquiry, Newsletter, Other",
+              "type": "string"
+            },
+            {
+              "id": "skip-senders",
+              "name": "skip_senders",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9b2f0eb0-447d-4fdc-a2e5-e13b6a13e6af",
+      "name": "SETTINGS - EDIT THIS NODE",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        0,
+        96
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "63b24f3d-e290-463e-bc50-8e5d884da722",
+      "name": "Test With One Ticket",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "test-ticket-id",
+              "name": "ticket_id",
+              "value": "PASTE-A-TICKET-ID-HERE",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "23f87332-7e54-4648-a1d7-0e0d00065d5e",
+      "name": "Test Ticket ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -240,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const s = $input.first().json;\nconst errs = [];\nconst clean = (v) => String(v === null || v === undefined ? '' : v).trim();\nconst list = (v) => clean(v).split(',').map((x) => x.trim()).filter(Boolean);\n\nlet domain = clean(s.freshdesk_domain)\n  .replace(/^https?:\\/\\//, '')\n  .replace(/\\/+$/, '')\n  .replace(/\\.freshdesk\\.com$/i, '');\nif (!domain || domain.toUpperCase().indexOf('YOUR-DOMAIN') !== -1) {\n  errs.push('Set freshdesk_domain in the SETTINGS node to your Freshdesk subdomain, the part before .freshdesk.com');\n}\n\nconst agentId = clean(s.customgpt_agent_id);\nif (!agentId || agentId.toUpperCase().indexOf('YOUR-AGENT-ID') !== -1) {\n  errs.push('Set customgpt_agent_id in the SETTINGS node to your CustomGPT agent number, the digits in the agent URL');\n}\n\nconst ticketId = clean(s.ticket_id);\nif (!ticketId || /[^0-9]/.test(ticketId)) {\n  errs.push('No ticket number. If you are testing, put a real ticket number in the Test Ticket ID node. If this came from Freshdesk, check the automation rule is sending the Ticket ID placeholder');\n}\n\nconst allowedTags = list(s.allowed_tags);\nif (allowedTags.length === 0) {\n  errs.push('Fill in allowed_tags in the SETTINGS node - the tags the agent may use, separated by commas');\n}\n\nconst allowedTypes = list(s.allowed_types);\nif (allowedTypes.length === 0) {\n  errs.push('Fill in allowed_types in the SETTINGS node - your Freshdesk ticket Types, spelled exactly as Freshdesk spells them');\n}\n\nif (errs.length > 0) {\n  const numbered = errs.map((e, i) => '(' + (i + 1) + ') ' + e).join('   ');\n  throw new Error('SETUP NEEDED - ' + errs.length + ' thing' + (errs.length === 1 ? '' : 's') + ' to fix before this can run:   ' + numbered);\n}\n\nreturn [{\n  json: {\n    ticket_id: ticketId,\n    freshdesk_domain: domain,\n    customgpt_agent_id: agentId,\n    allowed_tags: allowedTags,\n    allowed_types: allowedTypes,\n    skip_senders: list(s.skip_senders).map((x) => x.toLowerCase())\n  }\n}];"
+      },
+      "id": "29bb1957-b60f-45b3-8670-afc01761c090",
+      "name": "Preflight Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://{{ $json.freshdesk_domain }}.freshdesk.com/api/v2/tickets/{{ $json.ticket_id }}?include=requester",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "freshdeskApi",
+        "options": {}
+      },
+      "id": "f1a70b2a-eb4f-4afe-9dc3-9186049400b4",
+      "name": "Get Ticket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        528,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "not-an-automated-sender",
+              "leftValue": "={{ $(\"Preflight Check\").first().json.skip_senders.some(s => (($json.requester && $json.requester.email) || \"\").toLowerCase().includes(s)) }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": false
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "a481a905-556c-4222-8079-cc78b16354bc",
+      "name": "Skip Automated Senders",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        800,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const t = $input.first().json;\nconst NL = String.fromCharCode(10);\nconst SOURCES = { 1: 'Email', 2: 'Portal', 3: 'Phone', 7: 'Chat', 9: 'Feedback Widget', 10: 'Outbound Email' };\nconst requester = t.requester || {};\n\nlet prompt = '';\nprompt += 'Ticket ID: ' + t.id + NL;\nprompt += 'Source: ' + (SOURCES[t.source] || t.source) + NL;\nprompt += 'Current Type: ' + (t.type || '(unset)') + NL;\nprompt += 'Requester: ' + (requester.name || '') + ' <' + (requester.email || '') + '>' + NL;\nprompt += 'Subject: ' + (t.subject || '') + NL;\nprompt += 'Description:' + NL;\nprompt += String(t.description_text || '').slice(0, 2500);\n\nreturn [{\n  json: {\n    prompt: prompt,\n    ticket_id: t.id,\n    current_type: t.type || null,\n    source: t.source,\n    existing_tags: Array.isArray(t.tags) ? t.tags : []\n  }\n}];"
+      },
+      "id": "1784d53e-ea05-4230-b43d-ad1c36b88d50",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://app.customgpt.ai/api/v1/projects/{{ $(\"Preflight Check\").first().json.customgpt_agent_id }}/conversations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\"Content-Type\": \"application/json\"}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ name: \"triage-\" + $json.ticket_id }) }}",
+        "options": {}
+      },
+      "id": "9e66ccc2-6fd8-4ecd-ae30-929917374ede",
+      "name": "Create Conversation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1344,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://app.customgpt.ai/api/v1/projects/{{ $(\"Preflight Check\").first().json.customgpt_agent_id }}/conversations/{{ $json.data.session_id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\"Content-Type\": \"application/json\"}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ prompt: $(\"Build Prompt\").first().json.prompt }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "fe2cc4f0-7ce1-49cf-b18b-f93e0cbd1faa",
+      "name": "Ask Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1648,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cfg = $('Preflight Check').first().json;\nconst src = $('Build Prompt').first().json;\nconst BR = '<br>';\nconst FENCE = String.fromCharCode(96, 96, 96);\n\nconst raw = String((($input.first().json || {}).data || {}).openai_response || '');\nconst answer = raw.split(FENCE).join('').trim();\n\nfunction field(name) {\n  const open = '<' + name + '>';\n  const close = '</' + name + '>';\n  const a = answer.indexOf(open);\n  if (a === -1) { return null; }\n  const b = answer.indexOf(close, a + open.length);\n  if (b === -1) { return null; }\n  return answer.substring(a + open.length, b).trim();\n}\n\nconst disposition = String(field('disposition') || '').toLowerCase();\nif (disposition !== 'action-required' && disposition !== 'no-action-required') {\n  throw new Error('The agent did not return a usable disposition. Check the agent instructions match the output format in the README. It replied: ' + answer.slice(0, 300));\n}\n\nconst proposed = String(field('tags') || '').split(',').map((s) => s.trim()).filter(Boolean);\nconst rejected = proposed.filter((x) => cfg.allowed_tags.indexOf(x) === -1);\nconst topic = proposed.filter((x) => cfg.allowed_tags.indexOf(x) !== -1);\n\nconst existing = Array.isArray(src.existing_tags) ? src.existing_tags : [];\nconst seen = {};\nconst merged = [];\nexisting.concat([disposition]).concat(topic).forEach((x) => {\n  if (x && !seen[x]) { seen[x] = true; merged.push(x); }\n});\n\nconst typeMissing = String(field('type_is_missing') || '').toLowerCase() === 'true';\nlet type = field('type');\nif (!type || type.toLowerCase() === 'null') { type = null; }\nconst setType = Boolean(typeMissing && type && cfg.allowed_types.indexOf(type) !== -1 && type !== src.current_type);\n\nconst updatePayload = { tags: merged };\nif (setType) { updatePayload.type = type; }\n\nconst confidence = field('confidence') || 'unknown';\nconst reasoning = field('reasoning') || '';\n\nlet summary = '';\nsummary += 'Disposition: ' + disposition + BR;\nsummary += 'Topic tags: ' + (topic.length ? topic.join(', ') : '(none)') + BR;\nsummary += 'Tags applied: ' + merged.join(', ') + BR;\nsummary += 'Type: ' + (setType ? 'wanted to set ' + type : 'left unchanged (' + (src.current_type || 'unset') + ')') + BR;\nsummary += 'Confidence: ' + confidence + BR;\nsummary += 'Reasoning: ' + reasoning + BR;\nif (rejected.length) { summary += '<b>Rejected tags not on your list:</b> ' + rejected.join(', ') + BR; }\n\n\nreturn [{\n  json: {\n    ticket_id: src.ticket_id,\n    freshdesk_domain: cfg.freshdesk_domain,\n    disposition: disposition,\n    topic_tags: topic,\n    rejected_tags: rejected,\n    set_type: setType,\n    type: type,\n    confidence: confidence,\n    reasoning: reasoning,\n    update_payload: updatePayload,\n    tags_only_payload: { tags: merged },\n    verdict_summary: summary\n  }\n}];"
+      },
+      "id": "e6a00637-33d8-49bb-834a-cc433c9c520e",
+      "name": "Check The Answer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://{{ $json.freshdesk_domain }}.freshdesk.com/api/v2/tickets/{{ $json.ticket_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "freshdeskApi",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\"Content-Type\": \"application/json\"}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.update_payload) }}",
+        "options": {}
+      },
+      "id": "0f63ebb5-05b3-4eac-a070-248bbeb91bc8",
+      "name": "Apply Tags And Type",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2480,
+        96
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://{{ $(\"Check The Answer\").first().json.freshdesk_domain }}.freshdesk.com/api/v2/tickets/{{ $(\"Check The Answer\").first().json.ticket_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "freshdeskApi",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\"Content-Type\": \"application/json\"}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($(\"Check The Answer\").first().json.tags_only_payload) }}",
+        "options": {}
+      },
+      "id": "71d1deeb-7d44-4cbf-bb46-a3e542adf0ba",
+      "name": "Fallback - Tags Only",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3424,
+        192
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $(\"Check The Answer\").first().json.freshdesk_domain }}.freshdesk.com/api/v2/tickets/{{ $(\"Check The Answer\").first().json.ticket_id }}/notes",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "freshdeskApi",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\"Content-Type\": \"application/json\"}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ body: $('Diagnose Failure').first().json.note, private: true }) }}",
+        "options": {}
+      },
+      "id": "f068abb3-5b35-4fca-9fb9-20a8a2e333b4",
+      "name": "Explain What Failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3680,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## START HERE\n\n**1. Open the SETTINGS node** and fill in four things:\n\n- **freshdesk_domain** - your subdomain, the part before .freshdesk.com\n- **customgpt_agent_id** - the number in your agent URL\n- **allowed_tags** - every tag the agent may use, comma separated. Nothing else gets written.\n- **allowed_types** - your Freshdesk ticket Types, spelled exactly as Freshdesk spells them\n\nOptional: **skip_senders** - email addresses your own alerting sends from. Leave blank to classify everything.\n\nDo not switch the SETTINGS node to **JSON mode**. n8n discards the fields and switching back does not restore them. If that happens, re-import the template.\n\n**2. Connect three credentials:**\n\n- **Freshdesk account** on the four Freshdesk nodes - a Freshdesk API credential with your domain and API key\n- **CustomGPT API Key** on Create Conversation and Ask Agent - a Header Auth credential with name `Authorization` and value `Bearer YOUR-CUSTOMGPT-KEY`\n- **Freshdesk Webhook Secret** on the Webhook node - a Header Auth credential with name `X-Webhook-Secret`, holding the same secret you paste into the Freshdesk automation rule\n\nA 401 tells you which one is wrong: on Get Ticket it is the Freshdesk key, on Create Conversation it is the CustomGPT key, on the webhook itself the secret does not match the Freshdesk rule.\n\n**3. Test before going live.** Put a ticket number you do not mind changing into Test Ticket ID and click Execute Workflow. This writes to that ticket. You do not need the Freshdesk automation rule yet.\n\nPreflight Check stops the run with a plain-English message if anything is missing.",
+        "height": 620,
+        "width": 888,
+        "color": 4
+      },
+      "id": "f48469ee-872e-4833-9164-256c0cf6b5e7",
+      "name": "Sticky Note 41ef7da3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Reading the ticket\n\nSkip Automated Senders only drops mail from addresses you listed in skip_senders. Leave that blank and everything gets classified - including noise, which is the point. Noise you have labelled is noise you can filter.\n\nBuild Prompt hands the ticket text to the agent in the prompt. The agent has no connection to Freshdesk, so it cannot touch a ticket even if it tried.",
+        "height": 200,
+        "width": 740,
+        "color": 7
+      },
+      "id": "9d3a0413-7eab-4950-af80-daba114b71f1",
+      "name": "Sticky Note cd1f16aa",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        480,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Asking the agent\n\nThe agent returns a verdict in tagged fields, not JSON. One malformed field cannot destroy the rest of the answer.\n\nIf Check The Answer complains that the disposition is missing, the agent instructions do not match the expected output format. Fix the instructions, not this workflow.",
+        "height": 200,
+        "width": 520,
+        "color": 7
+      },
+      "id": "dbf96f0c-6db8-4e33-a509-946a6bcb316e",
+      "name": "Sticky Note 2ba582a4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Filter allowed tags\n\nAny tag not in your allowed_tags list is thrown away here, not written to the ticket. Rejected tags are reported in the note so you can decide whether to add them deliberately.\n\nTags are **merged** with whatever is already on the ticket. Freshdesk replaces the entire tag array on update, so writing the agent tags alone would silently delete tags a human added.\n\nA Type that is already set is never overwritten.",
+        "height": 200,
+        "width": 396,
+        "color": 3
+      },
+      "id": "0e3888d1-3987-449a-a989-8a13b23f63a1",
+      "name": "Sticky Note a6d67c0b",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1872,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Writing back to Freshdesk\n\nTags are written on every run. Type is written only when the ticket had none. A clean run is silent - no note is added, nothing else on the ticket is touched.\n\n**When the update fails.** Diagnose Failure reads what Freshdesk rejected, the fallback applies the tags on their own, and Explain What Failed posts a private note naming the cause. A tags-only update is the one call that almost always succeeds, so you keep the labels even when Type could not be set.\n\nThe usual cause is a **required field that is empty**. Freshdesk revalidates a ticket's required fields on every update and rejects the whole thing if one is blank, without mentioning it in your request. It shows up mostly on tickets that are already closed, where fields required on closure get checked again. Freshly arrived tickets are rarely affected.\n\nIf the response is not one this workflow recognises, the note includes the raw error so it can be reported. To stop the notes entirely, disable the **Explain What Failed** node - tags still get applied.",
+        "height": 340,
+        "width": 736,
+        "color": 5
+      },
+      "id": "e9210346-fb78-4e83-b7a5-294945eba85a",
+      "name": "Sticky Note 389d1fdb",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2896,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const BR = '<br>';\n\nfunction safe(fn, fallback) {\n  try { const v = fn(); return (v === undefined || v === null) ? fallback : v; }\n  catch (e) { return fallback; }\n}\n\nlet note = '';\nlet failedFields = [];\nlet freshdeskMessage = '';\nlet unrecognised = false;\nlet diagnoseError = '';\n\ntry {\n  const input = safe(() => $input.first().json, {});\n  const err = safe(() => input.error, null) || input;\n\n  let raw = '';\n  try { raw = JSON.stringify(err); } catch (e) { raw = String(err); }\n  if (!raw || raw === '{}' || raw === 'null') { raw = String(safe(() => input.message, '')); }\n\n  freshdeskMessage = String(safe(() => err.message, '') || safe(() => err.description, '')).trim();\n\n  const found = raw.match(/\"field\"\\s*:\\s*\"([^\"]+)\"/g) || [];\n  found.forEach((s) => {\n    const m = s.match(/\"field\"\\s*:\\s*\"([^\"]+)\"/);\n    if (m && failedFields.indexOf(m[1]) === -1) { failedFields.push(m[1]); }\n  });\n\n  const summary = String(safe(() => $('Check The Answer').first().json.verdict_summary, ''));\n\n  note += '<b>Ticket Triage - tags applied, Type not set</b>' + BR + BR;\n\n  if (summary) {\n    note += summary + BR;\n  } else {\n    unrecognised = true;\n    note += 'The classification result could not be read back into this note.' + BR + BR;\n  }\n\n  note += '<b>Why the full update failed</b>' + BR;\n\n  if (failedFields.length > 0) {\n    note += 'Freshdesk rejected the update because of <b>' + failedFields.join(', ') + '</b>.' + BR + BR;\n    note += 'Freshdesk revalidates a ticket&rsquo;s required fields whenever the ticket is updated. If one of them is empty the update is rejected as a whole, even though the request never mentioned that field. This most often happens on a ticket that is already closed, where fields marked required on closure are checked again. Tickets that have just arrived are not usually affected.' + BR + BR;\n    note += '<b>What to do</b>' + BR;\n    note += 'Give that field a value on this ticket, or set a default for it in Freshdesk under Admin &rarr; Ticket Fields so it is never empty. The tags above were applied on their own, so only the Type is missing.' + BR + BR;\n  } else if (freshdeskMessage) {\n    note += 'Freshdesk returned: ' + freshdeskMessage + BR + BR;\n    note += 'The tags above were applied on their own. The Type may need setting by hand.' + BR + BR;\n  } else {\n    unrecognised = true;\n    note += 'The update failed, but the response did not say why in a form this workflow recognises. The tags above were applied on their own.' + BR + BR;\n    note += '<b>Raw response</b>' + BR;\n    note += String(raw).slice(0, 600) + BR + BR;\n  }\n\n  if (unrecognised) {\n    note += 'If this keeps happening, send this note to whoever maintains the workflow &mdash; the raw response above is what they need.' + BR + BR;\n  }\n\n  note += '<i>To stop these notes, open this workflow in n8n and disable the \"Explain What Failed\" node. Tags will still be applied.</i>';\n} catch (e) {\n  diagnoseError = String(safe(() => e.message, e));\n  unrecognised = true;\n  note = '<b>Ticket Triage - tags applied, Type not set</b>' + BR + BR +\n    'The update failed and this note could not be built properly: ' + diagnoseError + BR + BR +\n    'The tags were still applied. Send this note to whoever maintains the workflow.' + BR + BR +\n    '<i>To stop these notes, open this workflow in n8n and disable the \"Explain What Failed\" node.</i>';\n}\n\nreturn [{ json: { note: note, failed_fields: failedFields, freshdesk_message: freshdeskMessage, unrecognised: unrecognised, diagnose_error: diagnoseError } }];"
+      },
+      "id": "2b3569c4-4735-4e49-90ac-a8dc7b83eca7",
+      "name": "Diagnose Failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3168,
+        192
+      ]
+    }
+  ],
+  "connections": {
+    "Freshdesk Webhook": {
+      "main": [
+        [
+          {
+            "node": "SETTINGS - EDIT THIS NODE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SETTINGS - EDIT THIS NODE": {
+      "main": [
+        [
+          {
+            "node": "Preflight Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test With One Ticket": {
+      "main": [
+        [
+          {
+            "node": "Test Ticket ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Ticket ID": {
+      "main": [
+        [
+          {
+            "node": "SETTINGS - EDIT THIS NODE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preflight Check": {
+      "main": [
+        [
+          {
+            "node": "Get Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Ticket": {
+      "main": [
+        [
+          {
+            "node": "Skip Automated Senders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip Automated Senders": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Create Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Conversation": {
+      "main": [
+        [
+          {
+            "node": "Ask Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Agent": {
+      "main": [
+        [
+          {
+            "node": "Check The Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Tags And Type": {
+      "main": [
+        null,
+        [
+          {
+            "node": "Diagnose Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fallback - Tags Only": {
+      "main": [
+        [
+          {
+            "node": "Explain What Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check The Answer": {
+      "main": [
+        [
+          {
+            "node": "Apply Tags And Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Diagnose Failure": {
+      "main": [
+        [
+          {
+            "node": "Fallback - Tags Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "nodeGroups": [
+    {
+      "id": "fc4422bf-39fd-48b8-be7e-882d496cdb36",
+      "name": "1 - Read the ticket",
+      "nodeIds": [
+        "f1a70b2a-eb4f-4afe-9dc3-9186049400b4",
+        "a481a905-556c-4222-8079-cc78b16354bc",
+        "1784d53e-ea05-4230-b43d-ad1c36b88d50"
+      ]
+    },
+    {
+      "id": "f18841eb-2484-4850-ad03-9ca34643154e",
+      "name": "2 - Ask the agent",
+      "nodeIds": [
+        "9e66ccc2-6fd8-4ecd-ae30-929917374ede",
+        "fe2cc4f0-7ce1-49cf-b18b-f93e0cbd1faa"
+      ]
+    },
+    {
+      "id": "fec957a7-d483-4a68-8b2b-08e535c9db99",
+      "name": "3 - Check the answer",
+      "nodeIds": [
+        "e6a00637-33d8-49bb-834a-cc433c9c520e"
+      ]
+    },
+    {
+      "id": "06e0ee80-b224-44a9-8303-12a68f465db9",
+      "name": "4 - Write back to Freshdesk",
+      "nodeIds": [
+        "0f63ebb5-05b3-4eac-a070-248bbeb91bc8",
+        "71d1deeb-7d44-4cbf-bb46-a3e542adf0ba",
+        "f068abb3-5b35-4fca-9fb9-20a8a2e333b4"
+      ],
+      "nodeNames": [
+        "Apply Tags And Type",
+        "Diagnose Failure",
+        "Fallback - Tags Only",
+        "Explain What Failed"
+      ]
+    }
+  ]
+}
