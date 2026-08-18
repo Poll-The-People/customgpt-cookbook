@@ -1,0 +1,98 @@
+{
+  "name": "Workflow Error Alerts - TEMPLATE",
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## What this is\n\nA smoke alarm for the triage workflow. It sits here doing nothing until that workflow breaks.\n\nWhen a run fails, n8n starts this workflow and it posts one message to Slack saying which workflow broke, which step it broke on, what the error said, and a link to open the run.\n\n## Setting it up\n\n1. Create a Slack app with the bot scopes `chat:write` and `channels:read` (use `groups:read` instead if your channel is private). Install it, and invite the bot to the channel.\n2. In n8n make a credential of type **Slack API** and paste the bot token, the one starting `xoxb-`.\n3. On **Slack Error Alert**, pick that credential and set your channel name.\n4. Activate this workflow.\n5. Open the triage workflow, go to **Workflow > Settings > Error Workflow**, and choose this one.\n\n## Testing it\n\nPress **Execute workflow**. A message should appear in the channel within a few seconds. If it doesn't, open the Slack step and read the error: `not_in_channel` means the bot isn't in the channel, `missing_scope` means a permission is missing, `channel_not_found` means the name is wrong or the read scope is missing, `invalid_auth` means the token is wrong.\n\n## Two things to expect\n\nIt only fires on real runs, not when you press Execute on the triage workflow itself. So testing that workflow by hand will never produce an alert.\n\nIt sends one message per failed run. If something big breaks, like an expired API key, every ticket that arrives makes its own message.",
+        "height": 540,
+        "width": 700,
+        "color": 3
+      },
+      "id": "21782e09-a318-4b15-a588-4a2c28522834",
+      "name": "Setup Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        160
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "a0b90c37-ae49-4c76-bf88-312740f6822d",
+      "name": "When A Workflow Fails",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const NL = String.fromCharCode(10);\nconst items = $input.all();\nconst e = (items[0] && items[0].json) || {};\nconst wf = e.workflow || {};\nconst ex = e.execution || {};\nconst err = ex.error || {};\nfunction esc(s) { return String(s == null ? '' : s).split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;'); }\nfunction clip(s, n) { s = String(s == null ? '' : s).trim(); return s.length > n ? s.slice(0, n - 1).trimEnd() + '...' : s; }\nconst isTest = !items.length || !wf.name;\nconst name = wf.name || 'Test run - no failure behind this';\nconst step = ex.lastNodeExecuted || 'n/a';\nconst msg = clip(err.message || 'No error message returned', 600);\nconst url = ex.url || '';\nconst blocks = [\n  { type: 'header', text: { type: 'plain_text', text: isTest ? 'Alert test' : 'Workflow failed', emoji: true } },\n  { type: 'section', text: { type: 'mrkdwn', text: '*' + esc(name) + '*' + NL + 'Failed at step: *' + esc(step) + '*' } },\n  { type: 'section', text: { type: 'mrkdwn', text: '*Error*' + NL + esc(msg) } }\n];\nif (url) {\n  blocks.push({ type: 'actions', elements: [ { type: 'button', text: { type: 'plain_text', text: 'Open execution', emoji: false }, url: url, style: 'primary' } ] });\n}\nblocks.push({ type: 'context', elements: [ { type: 'mrkdwn', text: isTest ? 'Manual test of the alert workflow - nothing actually failed' : 'n8n error alert - fires on production runs only, once per failed run' } ] });\nconst fallback = (isTest ? 'Alert test - ' : '') + name + ' failed at ' + step + ' - ' + clip(msg, 120);\nreturn [{ json: { workflow_name: name, failed_step: step, error_message: msg, execution_url: url, is_test: isTest, slack_blocks: JSON.stringify({ blocks: blocks }), slack_fallback: fallback } }];"
+      },
+      "id": "5f15b2cd-07a8-43a7-958d-f53401872e7c",
+      "name": "Build Alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "#YOUR-ALERTS-CHANNEL"
+        },
+        "messageType": "block",
+        "blocksUi": "={{ $json.slack_blocks }}",
+        "text": "={{ $json.slack_fallback }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "unfurl_links": false
+        }
+      },
+      "id": "70272bd3-e3f3-49f3-9b7e-7b7f426ae3c3",
+      "name": "Slack Error Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        448,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "When A Workflow Fails": {
+      "main": [
+        [
+          {
+            "node": "Build Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Alert": {
+      "main": [
+        [
+          {
+            "node": "Slack Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
